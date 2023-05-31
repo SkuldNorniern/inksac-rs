@@ -7,7 +7,7 @@ description = "Just another color lib for terminal environment"
 readme = "README.md"
 license = "Apache-2.0"
 repository = "https://github.com/SkuldNorniern/inksac-rs"
-
+keywords = ["cli"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
