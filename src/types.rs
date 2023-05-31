@@ -36,7 +36,7 @@ impl fmt::Display for Style {
         let fg = self.forground.unwrap_or(Color::Reset).to_fg();
         let bg = self.background.unwrap_or(Color::Reset).to_bg();
         
-        write!(f, "{}{}{}", fg, bg, RESET)
+        write!(f, "{}{}", fg, bg)
     }
 }
 impl Default for Style {
