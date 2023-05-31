@@ -26,7 +26,7 @@
 //! };
 //! // Step 2
 //! let title_text: ColoredString = ColoredString::new(
-//!     "Hello World".to_string(),
+//!     "Hello World",
 //!     TITLESTYLE
 //! );
 //!

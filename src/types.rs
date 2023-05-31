@@ -12,8 +12,8 @@ pub struct ColoredString {
 }
 #[allow(dead_code)]
 impl ColoredString{
-    pub fn new(string: String, color: Style) -> Self {
-        Self{string, color}
+    pub fn new(string: &str, color: Style) -> Self {
+        Self{string: string.to_string(), color}
     }
     pub fn to_string(&self) -> String {
         self.string.clone()
@@ -33,8 +33,8 @@ pub struct Style{
 }
 impl fmt::Display for Style {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let fg = self.forground.unwrap_or(Color::Reset).to_fg();
-        let bg = self.background.unwrap_or(Color::Reset).to_bg();
+        let fg = self.forground.unwrap_or(Color::Empty).to_fg();
+        let bg = self.background.unwrap_or(Color::Empty).to_bg();
         
         write!(f, "{}{}", fg, bg)
     }
@@ -56,7 +56,7 @@ pub enum Color {
     Cyan,
     White,
     
-    Reset,
+    Empty,
     RGB(u8, u8, u8),
 }
 impl Color {
@@ -70,7 +70,7 @@ impl Color {
             Color::Magenta => "\x1b[35m".to_string(),
             Color::Cyan => "\x1b[36m".to_string(),
             Color::White => "\x1b[37m".to_string(),
-            Color::Reset => "\x1b[0m".to_string(),
+            Color::Empty => "".to_string(),
             Color::RGB(r, g, b) => format!("\x1b[38;2;{};{};{}m", r, g, b)
         }
     }
@@ -84,7 +84,7 @@ impl Color {
             Color::Magenta => "\x1b[45m".to_string(),
             Color::Cyan => "\x1b[46m".to_string(),
             Color::White => "\x1b[47m".to_string(),
-            Color::Reset => "\x1b[0m".to_string(),
+            Color::Empty => "".to_string(),
             Color::RGB(r, g, b) => format!("\x1b[48;2;{};{};{}m", r, g, b) 
 
         }
