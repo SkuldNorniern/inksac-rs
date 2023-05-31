@@ -1,7 +1,12 @@
 [package]
 name = "inksac"
 version = "0.1.0"
+authors = ["Skuld Norniern <skuldnorniern@gmail.com>"]
 edition = "2021"
+description = "Just another color lib for terminal environment"
+readme = "README.md"
+license = "Apache-2.0"
+repository = "https://github.com/SkuldNorniern/inksac-rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
