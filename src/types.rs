@@ -2,13 +2,29 @@ use std::fmt;
 
 use crate::ansi_base::{BOLD, DIM, ITALIC, RESET, UNDERLINE};
 
-// Colored String type
+/// String with the colored text
+/// # Example
+/// ```rust
+/// use inksac::types::*;
+///
+/// let TITLESTYLE: Style = Style{
+///     forground: Some(Color::Green),
+///     background: Some(Color::Red),
+///     ..Default::default()
+/// };
+/// let title_text: ColoredString = ColoredString::new(
+///    "Hello World",
+///     TITLESTYLE
+///     );
+/// println!("{}", title_text);
+/// ```
 
 #[derive(Debug, Clone)]
 pub struct ColoredString {
     pub string: String,
     pub style: Style,
 }
+
 #[allow(dead_code)]
 impl ColoredString {
     pub fn new(string: &str, style: Style) -> Self {
@@ -25,8 +41,19 @@ impl fmt::Display for ColoredString {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-#[derive(Default)]
+/// Style for the colored text
+/// # Example
+/// ```rust
+/// use inksac::types::*;
+///
+/// let TITLESTYLE: Style = Style{
+///     forground: Some(Color::Green),
+///     background: Some(Color::Red),
+///     ..Default::default()
+/// };
+/// ```
+
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Style {
     pub forground: Option<Color>,
     pub background: Option<Color>,
@@ -52,16 +79,17 @@ impl Style {
     pub fn new() -> Self {
         Self::default()
     }
+    /// Toggle Bold
     pub fn bold(mut self) -> Self {
-        //! Toggle bold
         if !self.bold {
             self.bold = true;
         } else {
             self.bold = false;
         }
         self
-    } pub fn dim(mut self) -> Self {
-        //! Toggle dim
+    }
+    /// Toggle Dim
+    pub fn dim(mut self) -> Self {
         if !self.dim {
             self.dim = true;
         } else {
@@ -69,8 +97,8 @@ impl Style {
         }
         self
     }
+    /// Toggle Italic
     pub fn italic(mut self) -> Self {
-        //! Toggle italic
         if !self.italic {
             self.italic = true;
         } else {
@@ -78,8 +106,8 @@ impl Style {
         }
         self
     }
+    /// Toggle Underline
     pub fn underline(mut self) -> Self {
-        //! Toggle underline
         if !self.underline {
             self.underline = true;
         } else {
@@ -88,6 +116,8 @@ impl Style {
         self
     }
 }
+
+/// Color Palette
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy)]
@@ -145,7 +175,7 @@ impl Color {
         }
     }
     fn hex_to_rgb(hex: &str) -> (u8, u8, u8) {
-        let hex = hex.trim_start_matches("#");
+        let hex = hex.trim_start_matches('#');
         let r = u8::from_str_radix(&hex[0..2], 16).unwrap();
         let g = u8::from_str_radix(&hex[2..4], 16).unwrap();
         let b = u8::from_str_radix(&hex[4..6], 16).unwrap();
