@@ -10,7 +10,7 @@ Inksac is a Rust library that enhances terminal outputs by providing easy to use
 
 3. **Colorful Text Output**: Enhance your terminal applications with colorful text outputs using Inksac's `ColoredString`.
 
-4. **True Color Support**: Inksac Supports True Color by RGB values. - HEX color codes support WIP.
+4. **True Color Support**: Inksac Supports True Color by RGB, HEX values.
 
 5. **Format Support**: Inksac Support Bold, Dim, Italic, Underline - More options can be added in the future.
 
