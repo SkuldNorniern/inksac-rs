@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::ansi_base::RESET;
+use crate::ansi_base::{BOLD, DIM, ITALIC, RESET, UNDERLINE};
 
 
 // Colored String type
@@ -8,12 +8,12 @@ use crate::ansi_base::RESET;
 #[derive(Debug, Clone)]
 pub struct ColoredString {
     pub string: String,
-    pub color: Style
+    pub style: Style
 }
 #[allow(dead_code)]
 impl ColoredString{
-    pub fn new(string: &str, color: Style) -> Self {
-        Self{string: string.to_string(), color}
+    pub fn new(string: &str, style: Style) -> Self {
+        Self{string: string.to_string(), style}
     }
     pub fn to_string(&self) -> String {
         self.string.clone()
@@ -22,28 +22,78 @@ impl ColoredString{
 
 impl fmt::Display for ColoredString {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}{}{}", self.color, self.string, RESET)
+        write!(f, "{}{}{}", self.style, self.string, RESET)
     }
 }
 
 #[derive(Debug, Clone, Copy)]
 pub struct Style{
     pub forground: Option<Color>,
-    pub background: Option<Color>
+    pub background: Option<Color>,
+    pub bold: bool,
+    pub dim: bool,
+    pub italic: bool,
+    pub underline: bool
 }
 impl fmt::Display for Style {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let fg = self.forground.unwrap_or(Color::Empty).to_fg();
         let bg = self.background.unwrap_or(Color::Empty).to_bg();
-        
-        write!(f, "{}{}", fg, bg)
+        let bold = if self.bold { BOLD } else { "" };
+        let dim = if self.dim { DIM } else { "" };
+        let italic = if self.italic { ITALIC } else { "" };
+        let underline = if self.underline { UNDERLINE } else { "" };
+
+        write!(f, "{}{}{}{}{}{}", fg, bg, bold, dim, italic, underline)
     }
 }
 impl Default for Style {
     fn default() -> Self {
-        Self{forground: None, background: None}
+        Self{forground: None, background: None, bold: false, dim: false, italic: false, underline: false}
     }
 }
+impl Style {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    pub fn bold(mut self) -> Self {
+        //! Toggle bold
+        if !self.bold {
+            self.bold = true;
+        } else {
+            self.bold = false;
+        }
+        self
+    }
+    pub fn dim(mut self) -> Self {
+        //! Toggle dim
+        if !self.dim {
+            self.dim = true;
+        } else {
+            self.dim = false;
+        }
+        self
+    }
+    pub fn italic(mut self) -> Self{
+        //! Toggle italic
+        if !self.italic {
+            self.italic = true;
+        } else {
+            self.italic = false;
+        }
+        self
+    }
+    pub fn underline(mut self) -> Self{
+        //! Toggle underline
+        if !self.underline {
+            self.underline = true;
+        } else {
+            self.underline = false;
+        }
+        self
+    }
+}
+
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy)]
 pub enum Color {
@@ -91,3 +141,16 @@ impl Color {
     }
 }
 
+
+/*#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn underline() {
+        let style = Style::default();
+        let text = ColoredString::new("hello", style.clone());
+        let text2 = ColoredString::new("world", style.underline().clone());
+
+        
+    }
+}*/

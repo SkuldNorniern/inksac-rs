@@ -1,5 +1,13 @@
 #[allow(dead_code)]
 pub const RESET: &str = "\x1b[0m";
+#[allow(dead_code)]
+pub const BOLD: &str = "\x1b[1m";
+#[allow(dead_code)]
+pub const DIM: &str = "\x1b[2m";
+#[allow(dead_code)]
+pub const ITALIC: &str = "\x1b[3m";
+#[allow(dead_code)]
+pub const UNDERLINE: &str = "\x1b[4m";
 
 #[allow(dead_code)]
 pub fn check_color_available() -> Result<&'static str, &'static str> {
