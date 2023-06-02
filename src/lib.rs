@@ -1,10 +1,10 @@
 //! Component Based Terminal Colorization
-//! 
+//!
 //! # Usage Steps
 //!
 //! 1. Predefine your [Styles](crate::types::Style)
 //! 2. Create a [ColoredString](crate::types::ColoredString) with the predefined style
-//! 3. print the ColoredString just like using a normal String 
+//! 3. print the ColoredString just like using a normal String
 //!
 //!
 //! # Example
@@ -24,7 +24,7 @@
 //!     forground: Some(Color::Green),
 //!     background: Some(Color::Red),
 //!     bold: false,
-//!     dim: false, 
+//!     dim: false,
 //!     italic: false,
 //!     underline: false
 //! };

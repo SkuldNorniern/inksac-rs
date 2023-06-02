@@ -2,21 +2,20 @@ use std::fmt;
 
 use crate::ansi_base::{BOLD, DIM, ITALIC, RESET, UNDERLINE};
 
-
 // Colored String type
 
 #[derive(Debug, Clone)]
 pub struct ColoredString {
     pub string: String,
-    pub style: Style
+    pub style: Style,
 }
 #[allow(dead_code)]
-impl ColoredString{
+impl ColoredString {
     pub fn new(string: &str, style: Style) -> Self {
-        Self{string: string.to_string(), style}
-    }
-    pub fn to_string(&self) -> String {
-        self.string.clone()
+        Self {
+            string: string.to_string(),
+            style,
+        }
     }
 }
 
@@ -27,13 +26,14 @@ impl fmt::Display for ColoredString {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Style{
+#[derive(Default)]
+pub struct Style {
     pub forground: Option<Color>,
     pub background: Option<Color>,
     pub bold: bool,
     pub dim: bool,
     pub italic: bool,
-    pub underline: bool
+    pub underline: bool,
 }
 impl fmt::Display for Style {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -47,11 +47,7 @@ impl fmt::Display for Style {
         write!(f, "{}{}{}{}{}{}", fg, bg, bold, dim, italic, underline)
     }
 }
-impl Default for Style {
-    fn default() -> Self {
-        Self{forground: None, background: None, bold: false, dim: false, italic: false, underline: false}
-    }
-}
+
 impl Style {
     pub fn new() -> Self {
         Self::default()
@@ -64,8 +60,7 @@ impl Style {
             self.bold = false;
         }
         self
-    }
-    pub fn dim(mut self) -> Self {
+    } pub fn dim(mut self) -> Self {
         //! Toggle dim
         if !self.dim {
             self.dim = true;
@@ -74,7 +69,7 @@ impl Style {
         }
         self
     }
-    pub fn italic(mut self) -> Self{
+    pub fn italic(mut self) -> Self {
         //! Toggle italic
         if !self.italic {
             self.italic = true;
@@ -83,7 +78,7 @@ impl Style {
         }
         self
     }
-    pub fn underline(mut self) -> Self{
+    pub fn underline(mut self) -> Self {
         //! Toggle underline
         if !self.underline {
             self.underline = true;
@@ -105,15 +100,16 @@ pub enum Color {
     Magenta,
     Cyan,
     White,
-    
+
     Empty,
     RGB(u8, u8, u8),
+    HEX(&'static str),
 }
 impl Color {
-    fn to_fg(&self) -> String {
-        match *self {
+    fn to_fg(self) -> String {
+        match self {
             Color::Black => "\x1b[30m".to_string(),
-            Color::Red =>  "\x1b[31m".to_string(),
+            Color::Red => "\x1b[31m".to_string(),
             Color::Green => "\x1b[32m".to_string(),
             Color::Yellow => "\x1b[33m".to_string(),
             Color::Blue => "\x1b[34m".to_string(),
@@ -121,13 +117,18 @@ impl Color {
             Color::Cyan => "\x1b[36m".to_string(),
             Color::White => "\x1b[37m".to_string(),
             Color::Empty => "".to_string(),
-            Color::RGB(r, g, b) => format!("\x1b[38;2;{};{};{}m", r, g, b)
+            Color::RGB(r, g, b) => format!("\x1b[38;2;{};{};{}m", r, g, b),
+            Color::HEX(code) => {
+                let (r, g, b) = Self::hex_to_rgb(code);
+
+                format!("\x1b[38;2;{};{};{}m", r, g, b)
+            }
         }
     }
-    fn to_bg(&self) -> String {
+    fn to_bg(self) -> String {
         match self {
             Color::Black => "\x1b[40m".to_string(),
-            Color::Red =>  "\x1b[41m".to_string(),
+            Color::Red => "\x1b[41m".to_string(),
             Color::Green => "\x1b[42m".to_string(),
             Color::Yellow => "\x1b[43m".to_string(),
             Color::Blue => "\x1b[44m".to_string(),
@@ -135,12 +136,22 @@ impl Color {
             Color::Cyan => "\x1b[46m".to_string(),
             Color::White => "\x1b[47m".to_string(),
             Color::Empty => "".to_string(),
-            Color::RGB(r, g, b) => format!("\x1b[48;2;{};{};{}m", r, g, b) 
+            Color::RGB(r, g, b) => format!("\x1b[48;2;{};{};{}m", r, g, b),
+            Color::HEX(code) => {
+                let (r, g, b) = Self::hex_to_rgb(code);
 
+                format!("\x1b[48;2;{};{};{}m", r, g, b)
+            }
         }
     }
+    fn hex_to_rgb(hex: &str) -> (u8, u8, u8) {
+        let hex = hex.trim_start_matches("#");
+        let r = u8::from_str_radix(&hex[0..2], 16).unwrap();
+        let g = u8::from_str_radix(&hex[2..4], 16).unwrap();
+        let b = u8::from_str_radix(&hex[4..6], 16).unwrap();
+        (r, g, b)
+    }
 }
-
 
 /*#[cfg(test)]
 mod tests {
@@ -148,9 +159,16 @@ mod tests {
     #[test]
     fn underline() {
         let style = Style::default();
+        let style2 = Style{
+            forground: Some(Color::HEX("#6667AB")),
+            ..Default::default()
+        };
         let text = ColoredString::new("hello", style.clone());
-        let text2 = ColoredString::new("world", style.underline().clone());
+        let text2 = ColoredString::new("world", style2.clone());
 
-        
+        println!("{}", text);
+        println!("{}", text2);
+        panic!();
+
     }
 }*/

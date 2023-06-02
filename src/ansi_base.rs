@@ -13,9 +13,9 @@ pub const UNDERLINE: &str = "\x1b[4m";
 pub fn check_color_available() -> Result<&'static str, &'static str> {
     // Ckeck if the terminal supports ANSI colors
     // https://en.wikipedia.org/wiki/ANSI_escape_code
-    
+
     if std::env::var("TERM").is_ok() {
-        return Ok("Terminal supports ANSI colors")
+        return Ok("Terminal supports ANSI colors");
     }
     Err("Terminal does not support ANSI colors")
 }
