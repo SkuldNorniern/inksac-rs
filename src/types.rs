@@ -33,6 +33,10 @@ impl ColoredString {
             style,
         }
     }
+    /// Returns the non colored String
+    pub fn to_no_style(&self) -> String {
+        self.string.clone()
+    }
 }
 
 impl fmt::Display for ColoredString {
