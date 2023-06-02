@@ -23,6 +23,10 @@
 //! const TITLESTYLE: Style = Style{
 //!     forground: Some(Color::Green),
 //!     background: Some(Color::Red),
+//!     bold: false,
+//!     dim: false, 
+//!     italic: false,
+//!     underline: false
 //! };
 //! // Step 2
 //! let title_text: ColoredString = ColoredString::new(
