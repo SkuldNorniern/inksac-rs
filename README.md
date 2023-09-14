@@ -1,4 +1,7 @@
 # Inksac
+[![rust-fmt](https://github.com/SkuldNorniern/inksac-rs/actions/workflows/rust-fmt.yml/badge.svg)](https://github.com/SkuldNorniern/inksac-rs/actions/workflows/rust-fmt.yml)
+[![rust-clippy](https://github.com/SkuldNorniern/inksac-rs/actions/workflows/rust-clippy.yml/badge.svg)](https://github.com/SkuldNorniern/inksac-rs/actions/workflows/rust-clippy.yml)
+[![rust-audit](https://github.com/SkuldNorniern/inksac-rs/actions/workflows/rust-audit.yml/badge.svg)](https://github.com/SkuldNorniern/inksac-rs/actions/workflows/rust-audit.yml)
 
 Inksac is a Rust library that amplifies terminal outputs by offering a seamless integration with ANSI color support. It is devised to be uncomplicated, flexible, and delightful to utilize, adding a splash of color to your terminal applications.
 
