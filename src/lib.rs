@@ -11,17 +11,17 @@
 //!
 //!
 //! ```rust
-//! use inksac::check_color_available;
+//! use inksac::is_color_available;
 //! use inksac::types::*;
 //!
-//! match check_color_available() {
+//! match is_color_available() {
 //!     Ok(_) => println!("Terminal supports ANSI colors"),
 //!     Err(_) => println!("Terminal does not support ANSI colors"),
 //! }
 //!
 //! // Step 1
 //! const TITLESTYLE: Style = Style{
-//!     forground: Some(Color::Green),
+//!     foreground: Some(Color::Green),
 //!     background: Some(Color::Red),
 //!     bold: false,
 //!     dim: false,
@@ -41,4 +41,4 @@
 mod ansi_base;
 pub mod types;
 
-pub use ansi_base::check_color_available;
+pub use ansi_base::is_color_available;

@@ -8,7 +8,7 @@ use crate::ansi_base::{BOLD, DIM, ITALIC, RESET, UNDERLINE};
 /// use inksac::types::*;
 ///
 /// let TITLESTYLE: Style = Style{
-///     forground: Some(Color::Green),
+///     foreground: Some(Color::Green),
 ///     background: Some(Color::Red),
 ///     ..Default::default()
 /// };
@@ -25,11 +25,11 @@ pub struct ColoredString {
     pub style: Style,
 }
 
-#[allow(dead_code)]
 impl ColoredString {
+    /// Creates a new `ColoredString` with the given string and style.
     pub fn new(string: &str, style: Style) -> Self {
         Self {
-            string: string.to_string(),
+            string: string.into(),
             style,
         }
     }
@@ -45,13 +45,17 @@ impl fmt::Display for ColoredString {
     }
 }
 
-/// Style for the colored text
+/// A struct representing various styles that can be applied to a string.
+///
+/// Styles include foreground and background color, boldness, dimness, italicization, and underlining.
+///
 /// # Example
-/// ```rust
+///
+/// ```
 /// use inksac::types::*;
 ///
 /// let TITLESTYLE: Style = Style{
-///     forground: Some(Color::Green),
+///     foreground: Some(Color::Green),
 ///     background: Some(Color::Red),
 ///     ..Default::default()
 /// };
@@ -59,7 +63,7 @@ impl fmt::Display for ColoredString {
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Style {
-    pub forground: Option<Color>,
+    pub foreground: Option<Color>,
     pub background: Option<Color>,
     pub bold: bool,
     pub dim: bool,
@@ -68,7 +72,7 @@ pub struct Style {
 }
 impl fmt::Display for Style {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let fg = self.forground.unwrap_or(Color::Empty).to_fg();
+        let fg = self.foreground.unwrap_or(Color::Empty).to_fg();
         let bg = self.background.unwrap_or(Color::Empty).to_bg();
         let bold = if self.bold { BOLD } else { "" };
         let dim = if self.dim { DIM } else { "" };
@@ -80,66 +84,220 @@ impl fmt::Display for Style {
 }
 
 impl Style {
-    pub fn new() -> Self {
-        Self::default()
-    }
-    /// Toggle Bold
-    pub fn bold(mut self) -> Self {
-        if !self.bold {
-            self.bold = true;
-        } else {
-            self.bold = false;
-        }
-        self
-    }
-    /// Toggle Dim
-    pub fn dim(mut self) -> Self {
-        if !self.dim {
-            self.dim = true;
-        } else {
-            self.dim = false;
-        }
-        self
-    }
-    /// Toggle Italic
-    pub fn italic(mut self) -> Self {
-        if !self.italic {
-            self.italic = true;
-        } else {
-            self.italic = false;
-        }
-        self
-    }
-    /// Toggle Underline
-    pub fn underline(mut self) -> Self {
-        if !self.underline {
-            self.underline = true;
-        } else {
-            self.underline = false;
-        }
-        self
+    /// Creates a new instance of `StyleBuilder` with default values.
+    /// 
+    /// # Example
+    /// 
+    /// ```
+    /// use inksac::types::Style;
+    /// 
+    /// let builder = Style::builder();
+    /// ```
+    pub fn builder() -> StyleBuilder {
+        StyleBuilder::default()
     }
 }
 
-/// Color Palette
+/// A builder struct for constructing a `Style` instance with various configurations.
+pub struct StyleBuilder {
+    style: Style,
+}
 
-#[allow(dead_code)]
+impl Default for StyleBuilder {
+    /// Constructs a new `StyleBuilder` with a default `Style`.
+    fn default() -> Self {
+        Self {
+            style: Style::default(),
+        }
+    }
+}
+
+impl StyleBuilder {
+    /// Sets the foreground color of the style.
+    ///
+    /// # Arguments
+    ///
+    /// * `color` - An option containing a `Color` enum variant to set as the foreground color.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use inksac::types::{StyleBuilder, Color};
+    ///
+    /// let style = StyleBuilder::default()
+    ///     .foreground(Some(Color::Green))
+    ///     .build();
+    /// ```
+    pub fn foreground(mut self, color: Option<Color>) -> Self {
+        self.style.foreground = color;
+        self
+    }
+    /// Sets the background color of the style.
+    ///
+    /// # Arguments
+    ///
+    /// * `color` - An option containing a `Color` enum variant to set as the background color.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use inksac::types::{StyleBuilder, Color};
+    ///
+    /// let style = StyleBuilder::default()
+    ///     .background(Some(Color::Red))
+    ///     .build();
+    /// ```
+    pub fn background(mut self, color: Option<Color>) -> Self {
+        self.style.background = color;
+        self
+    }
+
+    /// Sets the bold attribute of the style to true.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use inksac::types::StyleBuilder;
+    ///
+    /// let style = StyleBuilder::default()
+    ///     .bold()
+    ///     .build();
+    /// ```
+    pub fn bold(mut self) -> Self {
+        self.style.bold = true;
+        self
+    }
+
+    /// Sets the dim attribute of the style to true.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use inksac::types::StyleBuilder;
+    ///
+    /// let style = StyleBuilder::default()
+    ///     .dim()
+    ///     .build();
+    /// ```
+    pub fn dim(mut self) -> Self {
+        self.style.dim = true;
+        self
+    }
+
+    /// Sets the italic attribute of the style to true.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use inksac::types::StyleBuilder;
+    ///
+    /// let style = StyleBuilder::default()
+    ///     .italic()
+    ///     .build();
+    /// ```
+    pub fn italic(mut self) -> Self {
+        self.style.italic = true;
+        self
+    }
+
+    /// Sets the underline attribute of the style to true.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use inksac::types::StyleBuilder;
+    ///
+    /// let style = StyleBuilder::default()
+    ///     .underline()
+    ///     .build();
+    /// ```
+    pub fn underline(mut self) -> Self {
+        self.style.underline = true;
+        self
+    }
+
+    /// Builds and returns a `Style` instance with the configurations set in the builder.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use inksac::types::{StyleBuilder,Color};
+    ///
+    /// let style = StyleBuilder::default()
+    ///     .foreground(Some(Color::Green))
+    ///     .bold()
+    ///     .build();
+    /// ```
+    pub fn build(self) -> Style {
+        self.style
+    }
+}
+
+/// Represents the different colors that can be used for text foreground and background styling.
+///
+/// The enum provides several options to specify colors:
+/// - Predefined color values (e.g., `Black`, `Red`, `Green`, etc.)
+/// - RGB values with the `RGB` variant
+/// - Hexadecimal color codes with the `HEX` variant
+///
+/// # Examples
+///
+/// Using predefined color values:
+///
+/// ```
+/// use inksac::types::Color;
+///
+/// let red = Color::Red;
+/// let green = Color::Green;
+/// ```
+///
+/// Using RGB values:
+///
+/// ```
+/// use inksac::types::Color;
+///
+/// let custom_color = Color::RGB(128, 0, 128);
+/// ```
+///
+/// Using a hexadecimal color code:
+///
+/// ```
+/// use inksac::types::Color;
+///
+/// let custom_color = Color::HEX("#800080");
+/// ```
+
 #[derive(Debug, Clone, Copy)]
 pub enum Color {
+    /// Black color.
     Black,
+    /// Red color.
     Red,
+    /// Green color.
     Green,
+    /// Yellow color.
     Yellow,
+    /// Blue color.
     Blue,
+    /// Magenta color.
     Magenta,
+    /// Cyan color.
     Cyan,
+    /// White color.
     White,
 
+    /// Represents an absence of color.
     Empty,
+    
+    /// Specifies a color using RGB values.
     RGB(u8, u8, u8),
+    
+    /// Specifies a color using a hexadecimal color code.
     HEX(&'static str),
 }
 impl Color {
+    /// Converts the `Color` enum variant to its corresponding foreground ANSI escape code string.
+    
     fn to_fg(self) -> String {
         match self {
             Color::Black => "\x1b[30m".to_string(),
@@ -159,6 +317,8 @@ impl Color {
             }
         }
     }
+    /// Converts the `Color` enum variant to its corresponding background ANSI escape code string.
+    
     fn to_bg(self) -> String {
         match self {
             Color::Black => "\x1b[40m".to_string(),
@@ -178,6 +338,17 @@ impl Color {
             }
         }
     }
+    /// Converts a hexadecimal color code (as a string) to a tuple of RGB values.
+    ///
+    /// This is used internally by the `to_fg` and `to_bg` methods when handling `Color::HEX` variants.
+    ///
+    /// # Parameters
+    /// - `hex`: A string slice representing the hexadecimal color code.
+    ///
+    /// # Returns
+    /// A tuple of three `u8` values representing the red, green, and blue components of the color, respectively.
+    ///
+    
     fn hex_to_rgb(hex: &str) -> (u8, u8, u8) {
         let hex = hex.trim_start_matches('#');
         let r = u8::from_str_radix(&hex[0..2], 16).unwrap();
@@ -187,22 +358,3 @@ impl Color {
     }
 }
 
-/*#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn underline() {
-        let style = Style::default();
-        let style2 = Style{
-            forground: Some(Color::HEX("#6667AB")),
-            ..Default::default()
-        };
-        let text = ColoredString::new("hello", style.clone());
-        let text2 = ColoredString::new("world", style2.clone());
-
-        println!("{}", text);
-        println!("{}", text2);
-        panic!();
-
-    }
-}*/
