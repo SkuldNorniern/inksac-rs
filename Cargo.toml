@@ -1,6 +1,6 @@
 [package]
 name = "inksac"
-version = "0.1.4"
+version = "0.2.0"
 authors = ["Skuld Norniern <skuldnorniern@gmail.com>"]
 edition = "2021"
 keywords = ["cli"]
