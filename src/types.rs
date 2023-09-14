@@ -85,12 +85,12 @@ impl fmt::Display for Style {
 
 impl Style {
     /// Creates a new instance of `StyleBuilder` with default values.
-    /// 
+    ///
     /// # Example
-    /// 
+    ///
     /// ```
     /// use inksac::types::Style;
-    /// 
+    ///
     /// let builder = Style::builder();
     /// ```
     pub fn builder() -> StyleBuilder {
@@ -288,16 +288,16 @@ pub enum Color {
 
     /// Represents an absence of color.
     Empty,
-    
+
     /// Specifies a color using RGB values.
     RGB(u8, u8, u8),
-    
+
     /// Specifies a color using a hexadecimal color code.
     HEX(&'static str),
 }
 impl Color {
     /// Converts the `Color` enum variant to its corresponding foreground ANSI escape code string.
-    
+
     fn to_fg(self) -> String {
         match self {
             Color::Black => "\x1b[30m".to_string(),
@@ -318,7 +318,7 @@ impl Color {
         }
     }
     /// Converts the `Color` enum variant to its corresponding background ANSI escape code string.
-    
+
     fn to_bg(self) -> String {
         match self {
             Color::Black => "\x1b[40m".to_string(),
@@ -348,7 +348,7 @@ impl Color {
     /// # Returns
     /// A tuple of three `u8` values representing the red, green, and blue components of the color, respectively.
     ///
-    
+
     fn hex_to_rgb(hex: &str) -> (u8, u8, u8) {
         let hex = hex.trim_start_matches('#');
         let r = u8::from_str_radix(&hex[0..2], 16).unwrap();
@@ -357,4 +357,3 @@ impl Color {
         (r, g, b)
     }
 }
-

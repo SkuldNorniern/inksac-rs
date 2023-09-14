@@ -11,4 +11,3 @@ pub fn is_color_available() -> Result<(), &'static str> {
     }
     Err("Terminal does not support ANSI colors")
 }
-
