@@ -51,27 +51,14 @@ impl Stylish for String {
     fn styled(self, style: Style) -> String {
         // ... apply the style to the string here ...
         // for instance:
-        format!(
-            "{}{}{}",
-            style,
-            self,
-            RESET
-        )
+        format!("{}{}{}", style, self, RESET)
     }
 }
 impl<'a> Stylish for &'a str {
     fn styled(self, style: Style) -> String {
-        format!(
-            "{}{}{}",
-            style,
-            self,
-            RESET
-        )
+        format!("{}{}{}", style, self, RESET)
     }
 }
-
-
-
 
 /// A struct representing various styles that can be applied to a string.
 ///
@@ -100,8 +87,16 @@ pub struct Style {
 }
 impl fmt::Display for Style {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let fg =  if self.foreground != Color::Empty { self.foreground.to_fg() } else { Color::Empty.to_fg() }; 
-        let bg =  if self.background != Color::Empty { self.background.to_bg() } else { Color::Empty.to_bg() };
+        let fg = if self.foreground != Color::Empty {
+            self.foreground.to_fg()
+        } else {
+            Color::Empty.to_fg()
+        };
+        let bg = if self.background != Color::Empty {
+            self.background.to_bg()
+        } else {
+            Color::Empty.to_bg()
+        };
         let bold = if self.bold { BOLD } else { "" };
         let dim = if self.dim { DIM } else { "" };
         let italic = if self.italic { ITALIC } else { "" };
@@ -295,8 +290,7 @@ impl StyleBuilder {
 /// let custom_color = Color::HEX("#800080");
 /// ```
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[derive(Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Color {
     /// Black color.
     Black,
@@ -324,7 +318,6 @@ pub enum Color {
 
     /// Specifies a color using a hexadecimal color code.
     HEX(&'static str),
-
 }
 impl Color {
     /// Converts the `Color` enum variant to its corresponding foreground ANSI escape code string.
@@ -345,7 +338,7 @@ impl Color {
                 let (r, g, b) = Self::hex_to_rgb(code);
 
                 format!("\x1b[38;2;{};{};{}m", r, g, b)
-            },
+            }
         }
     }
     /// Converts the `Color` enum variant to its corresponding background ANSI escape code string.
@@ -388,4 +381,3 @@ impl Color {
         (r, g, b)
     }
 }
-
