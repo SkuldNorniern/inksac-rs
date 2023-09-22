@@ -20,6 +20,7 @@ use crate::ansi_base::{BOLD, DIM, ITALIC, RESET, UNDERLINE};
 /// ```
 
 #[derive(Debug, Clone)]
+#[deprecated(since = "0.3.0", note = "Please use the String::styled method instead")]
 pub struct ColoredString {
     pub string: String,
     pub style: Style,
@@ -44,6 +45,24 @@ impl fmt::Display for ColoredString {
         write!(f, "{}{}{}", self.style, self.string, RESET)
     }
 }
+
+pub trait Stylish {
+    fn styled(self, style: Style) -> String;
+}
+
+impl Stylish for String {
+    fn styled(self, style: Style) -> String {
+        // ... apply the style to the string here ...
+        // for instance:
+        format!(
+            "{}{}{}",
+            style,
+            self,
+            RESET
+        )
+    }
+}
+
 
 /// A struct representing various styles that can be applied to a string.
 ///
