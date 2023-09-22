@@ -62,6 +62,18 @@ impl Stylish for String {
         )
     }
 }
+impl<'a> Stylish for &'a str {
+    fn styled(self, style: Style) -> String {
+        format!(
+            "{}{}{}",
+            style,
+            self,
+            RESET
+        )
+    }
+}
+
+
 
 
 /// A struct representing various styles that can be applied to a string.
@@ -82,8 +94,8 @@ impl Stylish for String {
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Style {
-    pub foreground: Option<Color>,
-    pub background: Option<Color>,
+    pub foreground: Color,
+    pub background: Color,
     pub bold: bool,
     pub dim: bool,
     pub italic: bool,
@@ -91,8 +103,8 @@ pub struct Style {
 }
 impl fmt::Display for Style {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let fg = self.foreground.unwrap_or(Color::Empty).to_fg();
-        let bg = self.background.unwrap_or(Color::Empty).to_bg();
+        let fg =  if self.foreground != Color::Empty { self.foreground.to_fg() } else { Color::Empty.to_fg() }; 
+        let bg =  if self.background != Color::Empty { self.background.to_bg() } else { Color::Empty.to_bg() };
         let bold = if self.bold { BOLD } else { "" };
         let dim = if self.dim { DIM } else { "" };
         let italic = if self.italic { ITALIC } else { "" };
@@ -144,10 +156,10 @@ impl StyleBuilder {
     /// use inksac::types::{StyleBuilder, Color};
     ///
     /// let style = StyleBuilder::default()
-    ///     .foreground(Some(Color::Green))
+    ///     .foreground(Color::Green)
     ///     .build();
     /// ```
-    pub fn foreground(mut self, color: Option<Color>) -> Self {
+    pub fn foreground(mut self, color: Color) -> Self {
         self.style.foreground = color;
         self
     }
@@ -163,10 +175,10 @@ impl StyleBuilder {
     /// use inksac::types::{StyleBuilder, Color};
     ///
     /// let style = StyleBuilder::default()
-    ///     .background(Some(Color::Red))
+    ///     .background(Color::Red)
     ///     .build();
     /// ```
-    pub fn background(mut self, color: Option<Color>) -> Self {
+    pub fn background(mut self, color: Color) -> Self {
         self.style.background = color;
         self
     }
@@ -286,7 +298,8 @@ impl StyleBuilder {
 /// let custom_color = Color::HEX("#800080");
 /// ```
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Default)]
 pub enum Color {
     /// Black color.
     Black,
@@ -306,6 +319,7 @@ pub enum Color {
     White,
 
     /// Represents an absence of color.
+    #[default]
     Empty,
 
     /// Specifies a color using RGB values.
@@ -313,6 +327,7 @@ pub enum Color {
 
     /// Specifies a color using a hexadecimal color code.
     HEX(&'static str),
+
 }
 impl Color {
     /// Converts the `Color` enum variant to its corresponding foreground ANSI escape code string.
@@ -333,7 +348,7 @@ impl Color {
                 let (r, g, b) = Self::hex_to_rgb(code);
 
                 format!("\x1b[38;2;{};{};{}m", r, g, b)
-            }
+            },
         }
     }
     /// Converts the `Color` enum variant to its corresponding background ANSI escape code string.
@@ -376,3 +391,4 @@ impl Color {
         (r, g, b)
     }
 }
+
