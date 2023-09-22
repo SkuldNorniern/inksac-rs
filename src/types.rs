@@ -8,14 +8,11 @@ use crate::ansi_base::{BOLD, DIM, ITALIC, RESET, UNDERLINE};
 /// use inksac::types::*;
 ///
 /// let TITLESTYLE: Style = Style{
-///     foreground: Some(Color::Green),
-///     background: Some(Color::Red),
+///     foreground: Color::Green,
+///     background: Color::Red,
 ///     ..Default::default()
 /// };
-/// let title_text: ColoredString = ColoredString::new(
-///    "Hello World",
-///     TITLESTYLE
-///     );
+/// let title_text = "Hello World".styled(TITLESTYLE);
 /// println!("{}", title_text);
 /// ```
 
@@ -86,8 +83,8 @@ impl<'a> Stylish for &'a str {
 /// use inksac::types::*;
 ///
 /// let TITLESTYLE: Style = Style{
-///     foreground: Some(Color::Green),
-///     background: Some(Color::Red),
+///     foreground: Color::Green,
+///     background: Color::Red,
 ///     ..Default::default()
 /// };
 /// ```
@@ -255,7 +252,7 @@ impl StyleBuilder {
     /// use inksac::types::{StyleBuilder,Color};
     ///
     /// let style = StyleBuilder::default()
-    ///     .foreground(Some(Color::Green))
+    ///     .foreground(Color::Green)
     ///     .bold()
     ///     .build();
     /// ```

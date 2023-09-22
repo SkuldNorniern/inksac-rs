@@ -25,8 +25,8 @@
 //!
 //! // Step 1: Predefine Your Styles using the builder pattern
 //! let title_style = Style::builder()
-//!     .foreground(Some(Color::Green))
-//!     .background(Some(Color::Red))
+//!     .foreground(Color::Green)
+//!     .background(Color::Red)
 //!     .underline()
 //!     .build();
 //!
