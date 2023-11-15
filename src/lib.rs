@@ -7,7 +7,7 @@
 //! ## Steps to Use
 //!
 //! 1. **Predefine Your Styles**: Before anything else, set up your styles using [`Style`](crate::types::Style) or with the builder pattern using [`StyleBuilder`](crate::types::StyleBuilder).
-//! 2. **Create Colored Strings**: Using the predefined styles, create colored strings with [`ColoredString`](crate::types::ColoredString), or use the [`Stylish`](crate::types::Stylish) trait. 
+//! 2. **Create Colored Strings**: Using the predefined styles, create colored strings with [`ColoredString`](crate::types::ColoredString), or use the [`Stylish`](crate::types::Stylish) trait.
 //! 3. **Print the Colored String**: Print the `ColoredString` instances just as you would with regular strings.
 //!
 //! ## Example
