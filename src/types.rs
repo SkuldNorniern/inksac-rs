@@ -41,20 +41,19 @@ impl fmt::Display for ColoredString {
     }
 }
 
+/// Trait for types that can be styled with a `Style`
 pub trait Stylish {
-    fn styled(self, style: Style) -> String;
+    fn styled(self, style: Style) -> ColoredString;
 }
 
 impl Stylish for String {
-    fn styled(self, style: Style) -> String {
-        // ... apply the style to the string here ...
-        // for instance:
-        format!("{}{}{}", style, self, RESET)
+    fn styled(self, style: Style) -> ColoredString {
+        ColoredString::new(&self, style)
     }
 }
 impl<'a> Stylish for &'a str {
-    fn styled(self, style: Style) -> String {
-        format!("{}{}{}", style, self, RESET)
+    fn styled(self, style: Style) -> ColoredString {
+        ColoredString::new(self, style)
     }
 }
 
