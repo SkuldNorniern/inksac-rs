@@ -1,6 +1,5 @@
-use std::fmt;
-
 use crate::ansi_base::{BOLD, DIM, ITALIC, RESET, UNDERLINE};
+use std::fmt;
 
 /// String with the colored text
 /// # Example
@@ -31,6 +30,7 @@ impl ColoredString {
             style,
         }
     }
+
     /// Returns the non colored String
     pub fn to_no_style(&self) -> String {
         self.string.clone()
@@ -75,7 +75,6 @@ impl<'a> Stylish for &'a str {
 ///     ..Default::default()
 /// };
 /// ```
-
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Style {
     pub foreground: Color,
@@ -155,6 +154,7 @@ impl StyleBuilder {
         self.style.foreground = color;
         self
     }
+
     /// Sets the background color of the style.
     ///
     /// # Arguments
@@ -289,23 +289,29 @@ impl StyleBuilder {
 ///
 /// let custom_color = Color::HEX("#800080");
 /// ```
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Color {
     /// Black color.
     Black,
+
     /// Red color.
     Red,
+
     /// Green color.
     Green,
+
     /// Yellow color.
     Yellow,
+
     /// Blue color.
     Blue,
+
     /// Magenta color.
     Magenta,
+
     /// Cyan color.
     Cyan,
+
     /// White color.
     White,
 
@@ -321,7 +327,6 @@ pub enum Color {
 }
 impl Color {
     /// Converts the `Color` enum variant to its corresponding foreground ANSI escape code string.
-
     fn to_fg(self) -> String {
         match self {
             Color::Black => "\x1b[30m".to_string(),
