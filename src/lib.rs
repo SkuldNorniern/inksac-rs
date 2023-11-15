@@ -7,7 +7,7 @@
 //! ## Steps to Use
 //!
 //! 1. **Predefine Your Styles**: Before anything else, set up your styles using [`Style`](crate::types::Style) or with the builder pattern using [`StyleBuilder`](crate::types::StyleBuilder).
-//! 2. **Create Colored Strings**: Using the predefined styles, create colored strings with [`ColoredString`](crate::types::ColoredString).
+//! 2. **Create Colored Strings**: Using the predefined styles, create colored strings with [`ColoredString`](crate::types::ColoredString), or use the [`Stylish`](crate::types::Stylish) trait. 
 //! 3. **Print the Colored String**: Print the `ColoredString` instances just as you would with regular strings.
 //!
 //! ## Example
@@ -40,7 +40,7 @@
 //! println!("{}", title_text);
 //! ```
 //!
-//! Please make sure your terminal supports ANSI colors by using the [`is_color_available`](crate::ansi_base::is_color_available) function before attempting to print colored text.
+//! Please make sure your terminal supports ANSI colors by using the [`is_color_available`] function before attempting to print colored text.
 //!
 mod ansi_base;
 pub mod types;
