@@ -14,9 +14,7 @@ use std::fmt;
 /// let title_text = "Hello World".styled(TITLESTYLE);
 /// println!("{}", title_text);
 /// ```
-
 #[derive(Debug, Clone)]
-#[deprecated(since = "0.3.0", note = "Please use the String::styled method instead")]
 pub struct ColoredString {
     pub string: String,
     pub style: Style,
