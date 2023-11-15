@@ -337,14 +337,17 @@ impl Color {
             Color::Empty => "".to_string(),
             Color::RGB(r, g, b) => format!("\x1b[38;2;{};{};{}m", r, g, b),
             Color::HEX(code) => {
-                let (r, g, b) = Self::hex_to_rgb(code);
+                let (r, g, b) = match Self::hex_to_rgb(code) {
+                    Some(rgb) => rgb,
+                    None => panic!("Invalid hex code: {}", code),
+                };
 
                 format!("\x1b[38;2;{};{};{}m", r, g, b)
             }
         }
     }
-    /// Converts the `Color` enum variant to its corresponding background ANSI escape code string.
 
+    /// Converts the `Color` enum variant to its corresponding background ANSI escape code string.
     fn to_bg(self) -> String {
         match self {
             Color::Black => "\x1b[40m".to_string(),
@@ -358,12 +361,16 @@ impl Color {
             Color::Empty => "".to_string(),
             Color::RGB(r, g, b) => format!("\x1b[48;2;{};{};{}m", r, g, b),
             Color::HEX(code) => {
-                let (r, g, b) = Self::hex_to_rgb(code);
+                let (r, g, b) = match Self::hex_to_rgb(code) {
+                    Some(rgb) => rgb,
+                    None => panic!("Invalid hex code: {}", code),
+                };
 
                 format!("\x1b[48;2;{};{};{}m", r, g, b)
             }
         }
     }
+
     /// Converts a hexadecimal color code (as a string) to a tuple of RGB values.
     ///
     /// This is used internally by the `to_fg` and `to_bg` methods when handling `Color::HEX` variants.
@@ -374,12 +381,35 @@ impl Color {
     /// # Returns
     /// A tuple of three `u8` values representing the red, green, and blue components of the color, respectively.
     ///
+    fn hex_to_rgb(hex: &str) -> Option<(u8, u8, u8)> {
+        let hex = hex.strip_prefix('#')?;
 
-    fn hex_to_rgb(hex: &str) -> (u8, u8, u8) {
-        let hex = hex.trim_start_matches('#');
-        let r = u8::from_str_radix(&hex[0..2], 16).unwrap();
-        let g = u8::from_str_radix(&hex[2..4], 16).unwrap();
-        let b = u8::from_str_radix(&hex[4..6], 16).unwrap();
-        (r, g, b)
+        // if the length of the hex string is not 6, panic the code
+        // Since the terminal does not support `RGBA` colors anyway
+        if hex.len() != 6 {
+            panic!("Invalid hex color length: {}", hex);
+        }
+        let r = u8::from_str_radix(&hex[0..2], 16).ok();
+        let g = u8::from_str_radix(&hex[2..4], 16).ok();
+        let b = u8::from_str_radix(&hex[4..6], 16).ok();
+
+        match (r, g, b) {
+            (Some(r), Some(g), Some(b)) => Some((r, g, b)),
+            _ => None,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_hex_to_rgb() {
+        let hex = "#ff0000";
+        let (r, g, b) = Color::hex_to_rgb(hex).unwrap();
+        assert_eq!(r, 255);
+        assert_eq!(g, 0);
+        assert_eq!(b, 0);
     }
 }
