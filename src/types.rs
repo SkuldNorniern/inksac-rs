@@ -1,3 +1,4 @@
+// FIX: ASAP: re-design this cursed module structure
 use crate::ansi_base::{BOLD, DIM, ITALIC, RESET, UNDERLINE};
 use std::fmt;
 
@@ -43,11 +44,14 @@ impl fmt::Display for ColoredString {
     }
 }
 
+// FIX!: LATER: trait name should be verb
 /// Trait for types that can be styled with a `Style`
 pub trait Stylish {
+    // FIX!: LATER: trait's only method should have consistent name with the trait
     fn styled(self, style: Style) -> ColoredString;
 }
 
+// FIX: blanket impl for everything that implements `ToString` or `AsRef<str>`
 impl Stylish for String {
     fn styled(self, style: Style) -> ColoredString {
         ColoredString::new(&self, style)
@@ -121,6 +125,7 @@ impl Style {
     }
 }
 
+// FIX!: unnecessary builder pattern
 /// A builder struct for constructing a `Style` instance with various configurations.
 pub struct StyleBuilder {
     style: Style,
@@ -152,6 +157,7 @@ impl StyleBuilder {
     ///     .build();
     /// ```
     pub fn foreground(mut self, color: Color) -> Self {
+        // FIX!: ASAP: take & return mutable reference rather than taking ownership
         // | e.g. (&mut self, color: Color) -> &mut Self
         // | also applys to every builder pattern methods below
         self.style.foreground = color;
@@ -329,6 +335,7 @@ impl Color {
             Color::Empty => "".to_string(),
             Color::RGB(r, g, b) => format!("\x1b[38;2;{};{};{}m", r, g, b),
             Color::HEX(code) => {
+                // FIX: converting str to integer and back to String
                 let (r, g, b) = match Self::hex_to_rgb(code) {
                     Some(rgb) => rgb,
                     None => panic!("Invalid hex code: {}", code),
@@ -342,6 +349,7 @@ impl Color {
     /// Converts the `Color` enum variant to its corresponding background ANSI escape code string.
     fn to_bg(self) -> String {
         match self {
+            // FIX!: use `Cow<'static, str>` to avoid `to_string()`
             Color::Black => "\x1b[40m".to_string(),
             Color::Red => "\x1b[41m".to_string(),
             Color::Green => "\x1b[42m".to_string(),
