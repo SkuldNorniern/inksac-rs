@@ -2,8 +2,10 @@ use crate::ansi_base::{BOLD, DIM, ITALIC, RESET, UNDERLINE};
 use std::fmt;
 
 /// String with the colored text
+///
 /// # Example
-/// ```rust
+///
+/// ```
 /// use inksac::types::*;
 ///
 /// let TITLESTYLE: Style = Style{
@@ -51,6 +53,7 @@ impl Stylish for String {
         ColoredString::new(&self, style)
     }
 }
+
 impl<'a> Stylish for &'a str {
     fn styled(self, style: Style) -> ColoredString {
         ColoredString::new(self, style)
@@ -81,6 +84,7 @@ pub struct Style {
     pub italic: bool,
     pub underline: bool,
 }
+
 impl fmt::Display for Style {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let fg = if self.foreground != Color::Empty {
@@ -148,6 +152,8 @@ impl StyleBuilder {
     ///     .build();
     /// ```
     pub fn foreground(mut self, color: Color) -> Self {
+        // | e.g. (&mut self, color: Color) -> &mut Self
+        // | also applys to every builder pattern methods below
         self.style.foreground = color;
         self
     }
@@ -288,28 +294,13 @@ impl StyleBuilder {
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Color {
-    /// Black color.
     Black,
-
-    /// Red color.
     Red,
-
-    /// Green color.
     Green,
-
-    /// Yellow color.
     Yellow,
-
-    /// Blue color.
     Blue,
-
-    /// Magenta color.
     Magenta,
-
-    /// Cyan color.
     Cyan,
-
-    /// White color.
     White,
 
     /// Represents an absence of color.
@@ -322,6 +313,7 @@ pub enum Color {
     /// Specifies a color using a hexadecimal color code.
     HEX(&'static str),
 }
+
 impl Color {
     /// Converts the `Color` enum variant to its corresponding foreground ANSI escape code string.
     fn to_fg(self) -> String {
@@ -376,9 +368,11 @@ impl Color {
     /// This is used internally by the `to_fg` and `to_bg` methods when handling `Color::HEX` variants.
     ///
     /// # Parameters
+    ///
     /// - `hex`: A string slice representing the hexadecimal color code.
     ///
     /// # Returns
+    ///
     /// A tuple of three `u8` values representing the red, green, and blue components of the color, respectively.
     ///
     fn hex_to_rgb(hex: &str) -> Option<(u8, u8, u8)> {
@@ -387,8 +381,9 @@ impl Color {
         // if the length of the hex string is not 6, panic the code
         // Since the terminal does not support `RGBA` colors anyway
         if hex.len() != 6 {
-            panic!("Invalid hex color length: {}", hex);
+            return None;
         }
+
         let r = u8::from_str_radix(&hex[0..2], 16).ok();
         let g = u8::from_str_radix(&hex[2..4], 16).ok();
         let b = u8::from_str_radix(&hex[4..6], 16).ok();
