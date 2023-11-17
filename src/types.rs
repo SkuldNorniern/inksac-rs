@@ -392,14 +392,11 @@ impl Color {
             return None;
         }
 
-        let r = u8::from_str_radix(&hex[0..2], 16).ok();
-        let g = u8::from_str_radix(&hex[2..4], 16).ok();
-        let b = u8::from_str_radix(&hex[4..6], 16).ok();
+        let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
+        let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
+        let b = u8::from_str_radix(&hex[4..6], 16).ok()?;
 
-        match (r, g, b) {
-            (Some(r), Some(g), Some(b)) => Some((r, g, b)),
-            _ => None,
-        }
+        Some((r, g, b))
     }
 }
 
