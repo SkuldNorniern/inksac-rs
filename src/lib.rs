@@ -163,7 +163,11 @@ impl fmt::Display for Style {
         let bold = if self.bold { ansi_base::BOLD } else { "" };
         let dim = if self.dim { ansi_base::DIM } else { "" };
         let italic = if self.italic { ansi_base::ITALIC } else { "" };
-        let underline = if self.underline { ansi_base::UNDERLINE } else { "" };
+        let underline = if self.underline {
+            ansi_base::UNDERLINE
+        } else {
+            ""
+        };
 
         write!(f, "{}{}{}{}{}{}", fg, bg, bold, dim, italic, underline)
     }
