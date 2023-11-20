@@ -6,8 +6,8 @@
 //!
 //! ## Steps to Use
 //!
-//! 1. **Predefine Your Styles**: Before anything else, set up your styles using [`Style`](crate::types::Style) or with the builder pattern using [`StyleBuilder`](crate::types::StyleBuilder).
-//! 2. **Create Colored Strings**: Using the predefined styles, create colored strings with [`ColoredString`](crate::types::ColoredString), or use the [`Stylish`](crate::types::Stylish) trait.
+//! 1. **Predefine Your Styles**: Before anything else, set up your styles using [`Style`] or with the builder pattern using [`StyleBuilder`].
+//! 2. **Create Colored Strings**: Using the predefined styles, create colored strings with [`ColoredString`], or use the [`Stylish`] trait.
 //! 3. **Print the Colored String**: Print the `ColoredString` instances just as you would with regular strings.
 //!
 //! ## Example
@@ -15,10 +15,9 @@
 //! Below is an example that demonstrates the usage of this crate, including utilizing the builder pattern for creating styles:
 //!
 //! ```rust
-//! use inksac::is_color_available;
-//! use inksac::types::*;
+//! use inksac::{self, Color, ColoredString, Style};
 //!
-//! match is_color_available() {
+//! match inksac::is_color_available() {
 //!     Ok(_) => println!("Terminal supports ANSI colors"),
 //!     Err(_) => println!("Terminal does not support ANSI colors"),
 //! }
@@ -66,7 +65,7 @@ pub fn is_color_available() -> Result<(), &'static str> {
 /// # Example
 ///
 /// ```
-/// use inksac::types::*;
+/// use inksac::{Color, Style, Stylish};
 ///
 /// let TITLESTYLE: Style = Style{
 ///     foreground: Color::Green,
@@ -130,7 +129,7 @@ impl<'a> Stylish for &'a str {
 /// # Example
 ///
 /// ```
-/// use inksac::types::*;
+/// use inksac::{Color, Style};
 ///
 /// let TITLESTYLE: Style = Style{
 ///     foreground: Color::Green,
@@ -179,7 +178,7 @@ impl Style {
     /// # Example
     ///
     /// ```
-    /// use inksac::types::Style;
+    /// use inksac::Style;
     ///
     /// let builder = Style::builder();
     /// ```
@@ -213,7 +212,7 @@ impl StyleBuilder {
     /// # Example
     ///
     /// ```
-    /// use inksac::types::{StyleBuilder, Color};
+    /// use inksac::{StyleBuilder, Color};
     ///
     /// let style = StyleBuilder::default()
     ///     .foreground(Color::Green)
@@ -236,7 +235,7 @@ impl StyleBuilder {
     /// # Example
     ///
     /// ```
-    /// use inksac::types::{StyleBuilder, Color};
+    /// use inksac::{StyleBuilder, Color};
     ///
     /// let style = StyleBuilder::default()
     ///     .background(Color::Red)
@@ -252,7 +251,7 @@ impl StyleBuilder {
     /// # Example
     ///
     /// ```
-    /// use inksac::types::StyleBuilder;
+    /// use inksac::StyleBuilder;
     ///
     /// let style = StyleBuilder::default()
     ///     .bold()
@@ -268,7 +267,7 @@ impl StyleBuilder {
     /// # Example
     ///
     /// ```
-    /// use inksac::types::StyleBuilder;
+    /// use inksac::StyleBuilder;
     ///
     /// let style = StyleBuilder::default()
     ///     .dim()
@@ -284,7 +283,7 @@ impl StyleBuilder {
     /// # Example
     ///
     /// ```
-    /// use inksac::types::StyleBuilder;
+    /// use inksac::StyleBuilder;
     ///
     /// let style = StyleBuilder::default()
     ///     .italic()
@@ -300,7 +299,7 @@ impl StyleBuilder {
     /// # Example
     ///
     /// ```
-    /// use inksac::types::StyleBuilder;
+    /// use inksac::StyleBuilder;
     ///
     /// let style = StyleBuilder::default()
     ///     .underline()
@@ -316,7 +315,7 @@ impl StyleBuilder {
     /// # Example
     ///
     /// ```
-    /// use inksac::types::{StyleBuilder,Color};
+    /// use inksac::{StyleBuilder,Color};
     ///
     /// let style = StyleBuilder::default()
     ///     .foreground(Color::Green)
@@ -340,7 +339,7 @@ impl StyleBuilder {
 /// Using predefined color values:
 ///
 /// ```
-/// use inksac::types::Color;
+/// use inksac::Color;
 ///
 /// let red = Color::Red;
 /// let green = Color::Green;
@@ -349,7 +348,7 @@ impl StyleBuilder {
 /// Using RGB values:
 ///
 /// ```
-/// use inksac::types::Color;
+/// use inksac::Color;
 ///
 /// let custom_color = Color::RGB(128, 0, 128);
 /// ```
@@ -357,7 +356,7 @@ impl StyleBuilder {
 /// Using a hexadecimal color code:
 ///
 /// ```
-/// use inksac::types::Color;
+/// use inksac::Color;
 ///
 /// let custom_color = Color::HEX("#800080");
 /// ```
