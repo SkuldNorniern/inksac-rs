@@ -41,7 +41,7 @@
 //!
 //! Please make sure your terminal supports ANSI colors by using the [`is_color_available`] function before attempting to print colored text.
 
-use std::fmt;
+use std::{borrow::Cow, fmt};
 
 pub mod ansi_base {
     pub const RESET: &str = "\x1b[0m";
@@ -384,18 +384,18 @@ pub enum Color {
 
 impl Color {
     /// Converts the `Color` enum variant to its corresponding foreground ANSI escape code string.
-    fn to_fg(self) -> String {
+    fn to_fg(self) -> Cow<'static, str> {
         match self {
-            Color::Black => "\x1b[30m".to_string(),
-            Color::Red => "\x1b[31m".to_string(),
-            Color::Green => "\x1b[32m".to_string(),
-            Color::Yellow => "\x1b[33m".to_string(),
-            Color::Blue => "\x1b[34m".to_string(),
-            Color::Magenta => "\x1b[35m".to_string(),
-            Color::Cyan => "\x1b[36m".to_string(),
-            Color::White => "\x1b[37m".to_string(),
-            Color::Empty => "".to_string(),
-            Color::RGB(r, g, b) => format!("\x1b[38;2;{};{};{}m", r, g, b),
+            Color::Black => Cow::Borrowed("\x1b[30m"),
+            Color::Red => Cow::Borrowed("\x1b[31m"),
+            Color::Green => Cow::Borrowed("\x1b[32m"),
+            Color::Yellow => Cow::Borrowed("\x1b[33m"),
+            Color::Blue => Cow::Borrowed("\x1b[34m"),
+            Color::Magenta => Cow::Borrowed("\x1b[35m"),
+            Color::Cyan => Cow::Borrowed("\x1b[36m"),
+            Color::White => Cow::Borrowed("\x1b[37m"),
+            Color::Empty => Cow::Borrowed(""),
+            Color::RGB(r, g, b) => Cow::Owned(format!("\x1b[38;2;{};{};{}m", r, g, b)),
             Color::HEX(code) => {
                 // FIX: converting str to integer and back to String
                 let (r, g, b) = match Self::hex_to_rgb(code) {
@@ -403,32 +403,32 @@ impl Color {
                     None => panic!("Invalid hex code: {}", code),
                 };
 
-                format!("\x1b[38;2;{};{};{}m", r, g, b)
+                Cow::Owned(format!("\x1b[38;2;{};{};{}m", r, g, b))
             }
         }
     }
 
     /// Converts the `Color` enum variant to its corresponding background ANSI escape code string.
-    fn to_bg(self) -> String {
+    fn to_bg(self) -> Cow<'static, str> {
         match self {
             // FIX!: use `Cow<'static, str>` to avoid `to_string()`
-            Color::Black => "\x1b[40m".to_string(),
-            Color::Red => "\x1b[41m".to_string(),
-            Color::Green => "\x1b[42m".to_string(),
-            Color::Yellow => "\x1b[43m".to_string(),
-            Color::Blue => "\x1b[44m".to_string(),
-            Color::Magenta => "\x1b[45m".to_string(),
-            Color::Cyan => "\x1b[46m".to_string(),
-            Color::White => "\x1b[47m".to_string(),
-            Color::Empty => "".to_string(),
-            Color::RGB(r, g, b) => format!("\x1b[48;2;{};{};{}m", r, g, b),
+            Color::Black => Cow::Borrowed("\x1b[40m"),
+            Color::Red => Cow::Borrowed("\x1b[41m"),
+            Color::Green => Cow::Borrowed("\x1b[42m"),
+            Color::Yellow => Cow::Borrowed("\x1b[43m"),
+            Color::Blue => Cow::Borrowed("\x1b[44m"),
+            Color::Magenta => Cow::Borrowed("\x1b[45m"),
+            Color::Cyan => Cow::Borrowed("\x1b[46m"),
+            Color::White => Cow::Borrowed("\x1b[47m"),
+            Color::Empty => Cow::Borrowed(""),
+            Color::RGB(r, g, b) => Cow::Owned(format!("\x1b[48;2;{};{};{}m", r, g, b)),
             Color::HEX(code) => {
                 let (r, g, b) = match Self::hex_to_rgb(code) {
                     Some(rgb) => rgb,
                     None => panic!("Invalid hex code: {}", code),
                 };
 
-                format!("\x1b[48;2;{};{};{}m", r, g, b)
+                Cow::Owned(format!("\x1b[48;2;{};{};{}m", r, g, b))
             }
         }
     }
