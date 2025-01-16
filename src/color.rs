@@ -36,9 +36,10 @@
 //! }
 //! ```
 
-use std::borrow::Cow;
-use crate::error::{ColorError, ColorSupport};
 use crate::check_color_support;
+use crate::error::{ColorError, ColorSupport};
+use std::borrow::Cow;
+use crate::ansi;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Color {
@@ -54,6 +55,8 @@ pub enum Color {
     Empty,
     RGB(u8, u8, u8),
     HEX(&'static str),
+    HSV(u16, u8, u8), // Hue (0-360), Saturation (0-100), Value (0-100)
+    HSL(u16, u8, u8), // Hue (0-360), Saturation (0-100), Lightness (0-100)
 }
 
 impl Color {
@@ -86,7 +89,7 @@ impl Color {
             ColorSupport::TrueColor => Ok(Color::RGB(r, g, b)),
             support => Err(ColorError::UnsupportedColorMode(
                 ColorSupport::TrueColor,
-                support
+                support,
             )),
         }
     }
@@ -115,18 +118,19 @@ impl Color {
     /// ```
     pub fn new_hex(hex: &'static str) -> Result<Self, ColorError> {
         Self::validate_hex(hex)?;
-        
+
         match check_color_support()? {
             ColorSupport::TrueColor => Ok(Color::HEX(hex)),
             support => Err(ColorError::UnsupportedColorMode(
                 ColorSupport::TrueColor,
-                support
+                support,
             )),
         }
     }
 
     pub(crate) fn validate_hex(hex: &str) -> Result<(u8, u8, u8), ColorError> {
-        let hex = hex.strip_prefix('#')
+        let hex = hex
+            .strip_prefix('#')
             .ok_or_else(|| ColorError::InvalidHexCode(hex.to_string()))?;
 
         if hex.len() != 6 {
@@ -145,40 +149,56 @@ impl Color {
 
     pub(crate) fn to_fg(self) -> Cow<'static, str> {
         match self {
-            Color::Black => Cow::Borrowed("\x1b[30m"),
-            Color::Red => Cow::Borrowed("\x1b[31m"),
-            Color::Green => Cow::Borrowed("\x1b[32m"),
-            Color::Yellow => Cow::Borrowed("\x1b[33m"),
-            Color::Blue => Cow::Borrowed("\x1b[34m"),
-            Color::Magenta => Cow::Borrowed("\x1b[35m"),
-            Color::Cyan => Cow::Borrowed("\x1b[36m"),
-            Color::White => Cow::Borrowed("\x1b[37m"),
+            Color::Black => Cow::Borrowed(ansi::FG_BLACK),
+            Color::Red => Cow::Borrowed(ansi::FG_RED),
+            Color::Green => Cow::Borrowed(ansi::FG_GREEN),
+            Color::Yellow => Cow::Borrowed(ansi::FG_YELLOW),
+            Color::Blue => Cow::Borrowed(ansi::FG_BLUE),
+            Color::Magenta => Cow::Borrowed(ansi::FG_MAGENTA),
+            Color::Cyan => Cow::Borrowed(ansi::FG_CYAN),
+            Color::White => Cow::Borrowed(ansi::FG_WHITE),
             Color::Empty => Cow::Borrowed(""),
-            Color::RGB(r, g, b) => Cow::Owned(format!("\x1b[38;2;{};{};{}m", r, g, b)),
+            Color::RGB(r, g, b) => Cow::Owned(ansi::fg_rgb(r, g, b)),
             Color::HEX(code) => {
                 let (r, g, b) = Self::validate_hex(code)
                     .expect("Invalid hex code - this should be validated at construction");
-                Cow::Owned(format!("\x1b[38;2;{};{};{}m", r, g, b))
+                Cow::Owned(ansi::fg_rgb(r, g, b))
+            }
+            Color::HSV(h, s, v) => {
+                let (r, g, b) = Self::hsv_to_rgb(h, s, v);
+                Cow::Owned(ansi::fg_rgb(r, g, b))
+            }
+            Color::HSL(h, s, l) => {
+                let (r, g, b) = Self::hsl_to_rgb(h, s, l);
+                Cow::Owned(ansi::fg_rgb(r, g, b))
             }
         }
     }
 
     pub(crate) fn to_bg(self) -> Cow<'static, str> {
         match self {
-            Color::Black => Cow::Borrowed("\x1b[40m"),
-            Color::Red => Cow::Borrowed("\x1b[41m"),
-            Color::Green => Cow::Borrowed("\x1b[42m"),
-            Color::Yellow => Cow::Borrowed("\x1b[43m"),
-            Color::Blue => Cow::Borrowed("\x1b[44m"),
-            Color::Magenta => Cow::Borrowed("\x1b[45m"),
-            Color::Cyan => Cow::Borrowed("\x1b[46m"),
-            Color::White => Cow::Borrowed("\x1b[47m"),
+            Color::Black => Cow::Borrowed(ansi::BG_BLACK),
+            Color::Red => Cow::Borrowed(ansi::BG_RED),
+            Color::Green => Cow::Borrowed(ansi::BG_GREEN),
+            Color::Yellow => Cow::Borrowed(ansi::BG_YELLOW),
+            Color::Blue => Cow::Borrowed(ansi::BG_BLUE),
+            Color::Magenta => Cow::Borrowed(ansi::BG_MAGENTA),
+            Color::Cyan => Cow::Borrowed(ansi::BG_CYAN),
+            Color::White => Cow::Borrowed(ansi::BG_WHITE),
             Color::Empty => Cow::Borrowed(""),
-            Color::RGB(r, g, b) => Cow::Owned(format!("\x1b[48;2;{};{};{}m", r, g, b)),
+            Color::RGB(r, g, b) => Cow::Owned(ansi::bg_rgb(r, g, b)),
             Color::HEX(code) => {
                 let (r, g, b) = Self::validate_hex(code)
                     .expect("Invalid hex code - this should be validated at construction");
-                Cow::Owned(format!("\x1b[48;2;{};{};{}m", r, g, b))
+                Cow::Owned(ansi::bg_rgb(r, g, b))
+            }
+            Color::HSV(h, s, v) => {
+                let (r, g, b) = Self::hsv_to_rgb(h, s, v);
+                Cow::Owned(ansi::bg_rgb(r, g, b))
+            }
+            Color::HSL(h, s, l) => {
+                let (r, g, b) = Self::hsl_to_rgb(h, s, l);
+                Cow::Owned(ansi::bg_rgb(r, g, b))
             }
         }
     }
@@ -255,6 +275,111 @@ impl Color {
         }
     }
 
+    /// Create a new HSV color
+    ///
+    /// # Arguments
+    /// * `h` - Hue (0-360)
+    /// * `s` - Saturation (0-100)
+    /// * `v` - Value (0-100)
+    ///
+    /// # Returns
+    /// * `Ok(Color)` if the terminal supports true color
+    /// * `Err(ColorError)` if true color is not supported
+    pub fn new_hsv(h: u16, s: u8, v: u8) -> Result<Self, ColorError> {
+        if h > 360 || s > 100 || v > 100 {
+            return Err(ColorError::InvalidColorValue(
+                "HSV values out of range".into(),
+            ));
+        }
+
+        match check_color_support()? {
+            ColorSupport::TrueColor => Ok(Color::HSV(h, s, v)),
+            support => Err(ColorError::UnsupportedColorMode(
+                ColorSupport::TrueColor,
+                support,
+            )),
+        }
+    }
+
+    /// Create a new HSL color
+    ///
+    /// # Arguments
+    /// * `h` - Hue (0-360)
+    /// * `s` - Saturation (0-100)
+    /// * `l` - Lightness (0-100)
+    ///
+    /// # Returns
+    /// * `Ok(Color)` if the terminal supports true color
+    /// * `Err(ColorError)` if true color is not supported
+    pub fn new_hsl(h: u16, s: u8, l: u8) -> Result<Self, ColorError> {
+        if h > 360 || s > 100 || l > 100 {
+            return Err(ColorError::InvalidColorValue(
+                "HSL values out of range".into(),
+            ));
+        }
+
+        match check_color_support()? {
+            ColorSupport::TrueColor => Ok(Color::HSL(h, s, l)),
+            support => Err(ColorError::UnsupportedColorMode(
+                ColorSupport::TrueColor,
+                support,
+            )),
+        }
+    }
+
+    // Helper function to convert HSV to RGB
+    fn hsv_to_rgb(h: u16, s: u8, v: u8) -> (u8, u8, u8) {
+        let h = f32::from(h) / 60.0;
+        let s = f32::from(s) / 100.0;
+        let v = f32::from(v) / 100.0;
+
+        let c = v * s;
+        let x = c * (1.0 - ((h % 2.0) - 1.0).abs());
+        let m = v - c;
+
+        let (r, g, b) = match h as u8 {
+            0 => (c, x, 0.0),
+            1 => (x, c, 0.0),
+            2 => (0.0, c, x),
+            3 => (0.0, x, c),
+            4 => (x, 0.0, c),
+            5 => (c, 0.0, x),
+            _ => (0.0, 0.0, 0.0),
+        };
+
+        (
+            ((r + m) * 255.0) as u8,
+            ((g + m) * 255.0) as u8,
+            ((b + m) * 255.0) as u8,
+        )
+    }
+
+    // Helper function to convert HSL to RGB
+    fn hsl_to_rgb(h: u16, s: u8, l: u8) -> (u8, u8, u8) {
+        let h = f32::from(h) / 360.0;
+        let s = f32::from(s) / 100.0;
+        let l = f32::from(l) / 100.0;
+
+        let c = (1.0 - (2.0 * l - 1.0).abs()) * s;
+        let x = c * (1.0 - ((h * 6.0 % 2.0) - 1.0).abs());
+        let m = l - c / 2.0;
+
+        let (r, g, b) = match (h * 6.0) as u8 {
+            0 => (c, x, 0.0),
+            1 => (x, c, 0.0),
+            2 => (0.0, c, x),
+            3 => (0.0, x, c),
+            4 => (x, 0.0, c),
+            5 => (c, 0.0, x),
+            _ => (0.0, 0.0, 0.0),
+        };
+
+        (
+            ((r + m) * 255.0) as u8,
+            ((g + m) * 255.0) as u8,
+            ((b + m) * 255.0) as u8,
+        )
+    }
 }
 
 #[cfg(test)]
@@ -274,4 +399,40 @@ mod tests {
         assert!(Color::validate_hex("#FF800").is_err());
         assert!(Color::validate_hex("#GGGGGG").is_err());
     }
-} 
+
+    #[test]
+    fn test_hsv_color() {
+        let color = Color::new_hsv(0, 100, 100); // Pure red
+        assert!(color.is_ok());
+
+        let invalid_color = Color::new_hsv(361, 100, 100);
+        assert!(invalid_color.is_err());
+    }
+
+    #[test]
+    fn test_hsl_color() {
+        let color = Color::new_hsl(120, 100, 50); // Pure green
+        assert!(color.is_ok());
+
+        let invalid_color = Color::new_hsl(0, 101, 50);
+        assert!(invalid_color.is_err());
+    }
+
+    #[test]
+    fn test_hsv_to_rgb_conversion() {
+        let (r, g, b) = Color::hsv_to_rgb(0, 100, 100);
+        assert_eq!((r, g, b), (255, 0, 0)); // Pure red
+
+        let (r, g, b) = Color::hsv_to_rgb(120, 100, 100);
+        assert_eq!((r, g, b), (0, 255, 0)); // Pure green
+    }
+
+    #[test]
+    fn test_hsl_to_rgb_conversion() {
+        let (r, g, b) = Color::hsl_to_rgb(0, 100, 50);
+        assert_eq!((r, g, b), (255, 0, 0)); // Pure red
+
+        let (r, g, b) = Color::hsl_to_rgb(240, 100, 50);
+        assert_eq!((r, g, b), (0, 0, 255)); // Pure blue
+    }
+}
