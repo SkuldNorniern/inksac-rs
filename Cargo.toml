@@ -10,3 +10,7 @@ license = "Apache-2.0"
 repository = "https://github.com/SkuldNorniern/inksac-rs"
 
 [dependencies]
+
+[lints.clippy]
+unwrap_used = "deny"
+cognitive_complexity = "deny"
