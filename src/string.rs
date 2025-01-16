@@ -122,8 +122,7 @@ impl<T: AsRef<str>> Styleable for T {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::Color;
+    use crate::prelude::*;
 
     #[test]
     fn test_colored_string_creation() {

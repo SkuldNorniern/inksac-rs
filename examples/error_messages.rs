@@ -1,6 +1,6 @@
 //! Example demonstrating styled error messages
 
-use inksac::{Color, Style, Styleable};
+use inksac::prelude::*;
 
 fn print_status(status: &str, message: &str) {
     match status {

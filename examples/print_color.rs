@@ -1,6 +1,6 @@
 //! Example demonstrating various features of the inksac library
 
-use inksac::{check_color_support, Color, ColorSupport, Style, Styleable};
+use inksac::prelude::*;
 
 fn print_color_demo() -> Result<(), Box<dyn std::error::Error>> {
     // First, check color support

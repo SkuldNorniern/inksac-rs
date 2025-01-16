@@ -84,6 +84,16 @@ mod error;
 mod string;
 mod style;
 
+// Add prelude module
+pub mod prelude {
+    pub use crate::color::Color;
+    pub use crate::error::{ColorError, ColorSupport};
+    pub use crate::string::{ColoredString, Styleable};
+    pub use crate::style::{Style, StyleBuilder};
+    pub use crate::{check_color_support, is_color_available};
+}
+
+// Keep existing pub use statements for backward compatibility
 pub use color::Color;
 pub use error::{ColorError, ColorSupport};
 pub use string::{ColoredString, Styleable};
