@@ -3,61 +3,80 @@
 [![rust-clippy](https://github.com/SkuldNorniern/inksac-rs/actions/workflows/rust-clippy.yml/badge.svg)](https://github.com/SkuldNorniern/inksac-rs/actions/workflows/rust-clippy.yml)
 [![rust-audit](https://github.com/SkuldNorniern/inksac-rs/actions/workflows/rust-audit.yml/badge.svg)](https://github.com/SkuldNorniern/inksac-rs/actions/workflows/rust-audit.yml)
 
-Inksac is a Rust library that amplifies terminal outputs by offering a seamless integration with ANSI color support. It is devised to be uncomplicated, flexible, and delightful to utilize, adding a splash of color to your terminal applications.
+Inksac is a Rust library that amplifies terminal outputs by offering a seamless integration with ANSI color support. It is designed to be uncomplicated, flexible, and delightful to use, adding a splash of color to your terminal applications.
 
 ## Features
 
-1. **Check ANSI Color Support**: Before painting your terminal with vibrant colors, ascertain if the current terminal supports ANSI colors using Inksac's built-in function.
+1. **ANSI Color Support Detection**: Automatically detect terminal color support levels including True Color support.
 
-2. **Customizable Styles**: Inksac allows the creation of distinct text styles with customizable foreground and background colors, giving a personal touch to your terminal display.
+2. **Rich Text Styling**:
+   - Foreground and background colors
+   - Basic colors (Black, Red, Green, Yellow, Blue, Magenta, Cyan, White)
+   - RGB and HEX color support
+   - Text formatting: Bold, Dim, Italic, Underline
 
-3. **Vivid Text Outputs**: Enrich your terminal applications with colorful text outputs using the `ColoredString` structure.
+3. **Color Manipulation**:
+   - Color lightening and darkening
+   - RGB color interpolation
+   - Gradient effects
 
-4. **True Color Support**: Experience the diversity of colors with Inksac supporting true color by RGB and HEX values.
+4. **Flexible API**:
+   - Builder pattern for style creation
+   - Trait-based styling with `Styleable`
+   - Error handling with proper Result types
 
-5. **Text Format Options**: Beautify your text with bold, dim, italic, underline formats. Stay tuned for more format options in future releases.
+## Examples
 
-## Usage
-
-Here is a basic example demonstrating how to utilize the Inksac crate:
-
+### Basic Usage
 ```rust
-use inksac::is_color_available;
-use inksac::types::{Color, ColoredString, Style};
+use inksac::{Color, Style, Styleable};
 
-fn main() {
-    // Check if the terminal supports ANSI colors
-    match is_color_available() {
-        Ok(_) => println!("Terminal supports ANSI colors"),
-        Err(err) => println!("{}", err),
-    }
-
-    // Create a style using the new builder pattern
-    let title_style = Style::builder()
-        .foreground(Some(Color::Green))
-        .background(Some(Color::Red))
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let style = Style::builder()
+        .foreground(Color::Green)
         .bold()
         .build();
 
-    // Create a ColoredString with the predefined style
-    let title_text = ColoredString::new("Hello World", title_style);
-
-    // Print the ColoredString
-    println!("{}", title_text);
+    println!("{}", "Hello, Colorful World!".style(style));
+    Ok(())
 }
+```
+
+### Styled Error Messages
+```rust
+use inksac::{Color, Style, Styleable};
+
+let error_style = Style::builder()
+    .foreground(Color::Red)
+    .bold()
+    .build();
+
+println!("{}: {}", "ERROR".style(error_style), "Operation failed");
 ```
 
 ## Installation
 
-To add Inksac as a dependency to your project, run the following command:
+Add Inksac to your project:
 
 ```sh
 cargo add inksac
 ```
 
-## Disclaimer
+## Examples
 
-Please note that the actual color representation may vary based on the terminal's capabilities and might not function as anticipated on all platforms.
+Check out the [examples directory](./examples) for more detailed examples including:
+- Error message styling
+- Rainbow text effects
+- Progress bars with gradients
+- Formatted tables
+- Color support detection
+
+## Platform Support
+
+Inksac automatically detects terminal capabilities and adjusts its output accordingly. The actual color representation may vary based on:
+- Terminal emulator capabilities
+- Operating system
+- Color support level (Basic, 256 colors, True Color)
 
 ---
 Happy Coding!
