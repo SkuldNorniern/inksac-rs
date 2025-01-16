@@ -1,20 +1,20 @@
 //! Style definitions and builder pattern implementation
-//! 
+//!
 //! This module provides the Style struct and its builder pattern implementation
 //! for creating terminal text styles. Styles can combine colors and text formatting
 //! options like bold, italic, and underline.
-//! 
+//!
 //! # Examples
-//! 
+//!
 //! ```rust
 //! use inksac::{Style, Color};
-//! 
+//!
 //! // Create a simple style
 //! let basic = Style::builder()
 //!     .foreground(Color::Green)
 //!     .bold()
 //!     .build();
-//! 
+//!
 //! // Create a complex style
 //! let complex = Style::builder()
 //!     .foreground(Color::new_rgb(255, 128, 0).unwrap())
@@ -25,9 +25,9 @@
 //!     .build();
 //! ```
 
-use std::fmt;
-use crate::color::Color;
 use crate::ansi;
+use crate::color::Color;
+use std::fmt;
 
 /// Represents a complete text style including colors and formatting
 #[derive(Debug, Clone, Copy, Default)]
@@ -42,11 +42,11 @@ pub struct Style {
 
 impl Style {
     /// Create a new StyleBuilder instance
-    /// 
+    ///
     /// # Examples
     /// ```
     /// use inksac::{Style, Color};
-    /// 
+    ///
     /// let style = Style::builder()
     ///     .foreground(Color::Green)
     ///     .bold()
@@ -57,20 +57,20 @@ impl Style {
     }
 
     /// Combine two styles, with the second style overriding the first
-    /// 
+    ///
     /// # Examples
     /// ```rust
     /// use inksac::{Style, Color};
-    /// 
+    ///
     /// let base = Style::builder()
     ///     .foreground(Color::Blue)
     ///     .bold()
     ///     .build();
-    /// 
+    ///
     /// let highlight = Style::builder()
     ///     .background(Color::Yellow)
     ///     .build();
-    /// 
+    ///
     /// let combined = base.compose(highlight);
     /// ```
     pub fn compose(self, other: Style) -> Style {
@@ -98,11 +98,11 @@ impl Style {
     }
 
     /// Check if the style has any attributes set
-    /// 
+    ///
     /// # Returns
     /// `true` if no colors or formatting options are set
     pub fn is_empty(&self) -> bool {
-        self.foreground == Color::Empty 
+        self.foreground == Color::Empty
             && self.background == Color::Empty
             && !self.bold
             && !self.dim
@@ -115,7 +115,7 @@ impl fmt::Display for Style {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let fg = self.foreground.to_fg();
         let bg = self.background.to_bg();
-        
+
         let bold = if self.bold { ansi::BOLD } else { "" };
         let dim = if self.dim { ansi::DIM } else { "" };
         let italic = if self.italic { ansi::ITALIC } else { "" };
@@ -197,13 +197,10 @@ mod tests {
 
     #[test]
     fn test_style_display() {
-        let style = Style::builder()
-            .foreground(Color::Red)
-            .bold()
-            .build();
+        let style = Style::builder().foreground(Color::Red).bold().build();
 
         let output = style.to_string();
         assert!(output.contains("\x1b[31m")); // Red
         assert!(output.contains("\x1b[1m")); // Bold
     }
-} 
+}

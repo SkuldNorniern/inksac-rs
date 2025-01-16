@@ -1,8 +1,6 @@
 //! Example demonstrating various features of the inksac library
 
-use inksac::{
-    check_color_support, Color, ColorSupport, Style, Styleable,
-};
+use inksac::{check_color_support, Color, ColorSupport, Style, Styleable};
 
 fn print_color_demo() -> Result<(), Box<dyn std::error::Error>> {
     // First, check color support
@@ -51,29 +49,38 @@ fn print_color_demo() -> Result<(), Box<dyn std::error::Error>> {
         // Color manipulation
         let base_color = Color::new_rgb(255, 100, 0)?;
         println!("Color Manipulation:");
-        println!("Original: {}", "■■■■".style(Style::builder().foreground(base_color).build()));
-        
+        println!(
+            "Original: {}",
+            "■■■■".style(Style::builder().foreground(base_color).build())
+        );
+
         let lighter = base_color.lighten(30)?;
-        println!("Lighter : {}", "■■■■".style(Style::builder().foreground(lighter).build()));
-        
+        println!(
+            "Lighter : {}",
+            "■■■■".style(Style::builder().foreground(lighter).build())
+        );
+
         let darker = base_color.darken(30)?;
-        println!("Darker  : {}", "■■■■".style(Style::builder().foreground(darker).build()));
+        println!(
+            "Darker  : {}",
+            "■■■■".style(Style::builder().foreground(darker).build())
+        );
         println!();
     }
 
     // Text styles
     println!("Text Styles:");
     let text = "Styled Text";
-    
+
     let bold = Style::builder().bold().build();
     println!("Bold:      {}", text.style(bold));
-    
+
     let italic = Style::builder().italic().build();
     println!("Italic:    {}", text.style(italic));
-    
+
     let underline = Style::builder().underline().build();
     println!("Underline: {}", text.style(underline));
-    
+
     let dim = Style::builder().dim().build();
     println!("Dim:       {}", text.style(dim));
 
@@ -95,4 +102,4 @@ fn main() {
         eprintln!("Error: {}", e);
         std::process::exit(1);
     }
-} 
+}

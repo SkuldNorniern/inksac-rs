@@ -1,12 +1,12 @@
 //! A type-safe terminal text styling library with color support
-//! 
+//!
 //! `inksac` provides a safe and ergonomic way to add colors and styles to terminal text output.
 //! It automatically detects terminal capabilities and handles fallbacks gracefully.
 //!
 //! # Key Features
 //!
 //! - Safe color handling with terminal capability detection
-//! - Support for 16 colors, 256 colors, and true color (16M colors) 
+//! - Support for 16 colors, 256 colors, and true color (16M colors)
 //! - Composable text styling (bold, italic, underline)
 //! - RGB and hex color definitions
 //! - Error handling for all operations
@@ -80,15 +80,14 @@
 
 mod ansi;
 mod color;
-mod style;
-mod string;
 mod error;
-
+mod string;
+mod style;
 
 pub use color::Color;
-pub use style::{Style, StyleBuilder};
-pub use string::{ColoredString, Styleable};
 pub use error::{ColorError, ColorSupport};
+pub use string::{ColoredString, Styleable};
+pub use style::{Style, StyleBuilder};
 
 /// Check the level of color support in the current terminal
 ///
@@ -126,12 +125,12 @@ pub fn check_color_support() -> Result<ColorSupport, ColorError> {
     let term = std::env::var("TERM").unwrap_or_default();
     let clicolor = std::env::var("CLICOLOR").unwrap_or_default();
     let clicolor_force = std::env::var("CLICOLOR_FORCE").unwrap_or_default();
-    
+
     // Force color if CLICOLOR_FORCE is set to 1
     if clicolor_force == "1" {
         return Ok(ColorSupport::Basic);
     }
-    
+
     // Disable color if CLICOLOR is set to 0
     if clicolor == "0" {
         return Ok(ColorSupport::NoColor);
@@ -140,10 +139,11 @@ pub fn check_color_support() -> Result<ColorSupport, ColorError> {
     // Check common terminal types
     if term.contains("256color") || term.contains("256") {
         Ok(ColorSupport::Color256)
-    } else if term.contains("color") 
+    } else if term.contains("color")
         || term.contains("ansi")
         || term.contains("xterm")
-        || term.contains("screen") {
+        || term.contains("screen")
+    {
         Ok(ColorSupport::Basic)
     } else {
         Ok(ColorSupport::NoColor)
@@ -180,7 +180,7 @@ mod tests {
     // Helper function to set and unset environment variables for testing
     fn with_env_vars<F>(vars: &[(&str, Option<&str>)], test: F) -> ColorSupport
     where
-        F: FnOnce() -> Result<ColorSupport, ColorError>
+        F: FnOnce() -> Result<ColorSupport, ColorError>,
     {
         // List of all color-related environment variables we need to control
         let color_vars = [
@@ -226,81 +226,91 @@ mod tests {
 
     #[test]
     fn test_no_color_env() {
-        let support = with_env_vars(&[
-            ("NO_COLOR", Some("")),
-            ("TERM", None),
-            ("COLORTERM", None),
-        ], check_color_support);
+        let support = with_env_vars(
+            &[("NO_COLOR", Some("")), ("TERM", None), ("COLORTERM", None)],
+            check_color_support,
+        );
         assert_eq!(support, ColorSupport::NoColor);
     }
 
     #[test]
     fn test_true_color_support() {
-        let support = with_env_vars(&[
-            ("NO_COLOR", None),
-            ("COLORTERM", Some("truecolor")),
-        ], check_color_support);
+        let support = with_env_vars(
+            &[("NO_COLOR", None), ("COLORTERM", Some("truecolor"))],
+            check_color_support,
+        );
         assert_eq!(support, ColorSupport::TrueColor);
 
-        let support = with_env_vars(&[
-            ("NO_COLOR", None),
-            ("COLORTERM", Some("24bit")),
-        ], check_color_support);
+        let support = with_env_vars(
+            &[("NO_COLOR", None), ("COLORTERM", Some("24bit"))],
+            check_color_support,
+        );
         assert_eq!(support, ColorSupport::TrueColor);
     }
 
     #[test]
     fn test_256_color_support() {
-        let support = with_env_vars(&[
-            ("NO_COLOR", None),
-            ("COLORTERM", None),
-            ("TERM", Some("xterm-256color")),
-        ], check_color_support);
+        let support = with_env_vars(
+            &[
+                ("NO_COLOR", None),
+                ("COLORTERM", None),
+                ("TERM", Some("xterm-256color")),
+            ],
+            check_color_support,
+        );
         assert_eq!(support, ColorSupport::Color256);
     }
 
     #[test]
     fn test_basic_color_support() {
-        let support = with_env_vars(&[
-            ("NO_COLOR", None),
-            ("COLORTERM", None),
-            ("TERM", Some("xterm")),
-        ], check_color_support);
+        let support = with_env_vars(
+            &[
+                ("NO_COLOR", None),
+                ("COLORTERM", None),
+                ("TERM", Some("xterm")),
+            ],
+            check_color_support,
+        );
         assert_eq!(support, ColorSupport::Basic);
     }
 
     #[test]
     fn test_clicolor_force() {
-        let support = with_env_vars(&[
-            ("CLICOLOR_FORCE", Some("1")),
-            // Explicitly set these to None to ensure they're cleared
-            ("NO_COLOR", None),
-            ("COLORTERM", None),
-            ("TERM", None),
-        ], check_color_support);
+        let support = with_env_vars(
+            &[
+                ("CLICOLOR_FORCE", Some("1")),
+                // Explicitly set these to None to ensure they're cleared
+                ("NO_COLOR", None),
+                ("COLORTERM", None),
+                ("TERM", None),
+            ],
+            check_color_support,
+        );
         assert_eq!(support, ColorSupport::Basic);
     }
 
     #[test]
     fn test_clicolor_disable() {
-        let support = with_env_vars(&[
-            ("CLICOLOR", Some("0")),
-            // Explicitly set these to None to ensure they're cleared
-            ("NO_COLOR", None),
-            ("COLORTERM", None),
-            ("TERM", Some("xterm-256color")), // Should be ignored when CLICOLOR=0
-            ("CLICOLOR_FORCE", None),
-        ], check_color_support);
+        let support = with_env_vars(
+            &[
+                ("CLICOLOR", Some("0")),
+                // Explicitly set these to None to ensure they're cleared
+                ("NO_COLOR", None),
+                ("COLORTERM", None),
+                ("TERM", Some("xterm-256color")), // Should be ignored when CLICOLOR=0
+                ("CLICOLOR_FORCE", None),
+            ],
+            check_color_support,
+        );
         assert_eq!(support, ColorSupport::NoColor);
     }
 
     #[test]
     fn test_no_term_env() {
-        let support = with_env_vars(&[
-            ("NO_COLOR", None),
-            ("COLORTERM", None),
-            ("TERM", None),
-        ], check_color_support);
+        let support = with_env_vars(
+            &[("NO_COLOR", None), ("COLORTERM", None), ("TERM", None)],
+            check_color_support,
+        );
         assert_eq!(support, ColorSupport::NoColor);
     }
 
@@ -321,10 +331,8 @@ mod tests {
 
     #[test]
     fn test_colored_string() {
-        let style = Style::builder()
-            .foreground(Color::Green)
-            .build();
-        
+        let style = Style::builder().foreground(Color::Green).build();
+
         let colored = "test".style(style);
         assert_eq!(colored.into_string(), "test");
     }

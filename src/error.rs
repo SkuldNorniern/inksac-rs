@@ -34,14 +34,16 @@ pub enum ColorError {
     InvalidOperation(String),
     /// Color manipulation error
     ColorManipulation(String),
+    /// Invalid color value
+    InvalidColorValue(String),
 }
 
 /// Terminal color support levels
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ColorSupport {
     NoColor,
-    Basic,    // 16 colors
-    Color256, // 256 colors
+    Basic,     // 16 colors
+    Color256,  // 256 colors
     TrueColor, // 16 million colors
 }
 impl std::fmt::Display for ColorSupport {
@@ -60,11 +62,15 @@ impl std::fmt::Display for ColorError {
             ColorError::NoTerminalSupport => write!(f, "Terminal does not support ANSI colors"),
             ColorError::InvalidHexCode(hex) => write!(f, "Invalid hex color code: {}", hex),
             ColorError::InvalidRGB(msg) => write!(f, "Invalid RGB values: {}", msg),
-            ColorError::UnsupportedColorMode(req, avail) => 
-                write!(f, "Terminal doesn't support {:?} (available: {:?})", req, avail),
+            ColorError::UnsupportedColorMode(req, avail) => write!(
+                f,
+                "Terminal doesn't support {:?} (available: {:?})",
+                req, avail
+            ),
             ColorError::EnvError(e) => write!(f, "Environment error: {}", e),
             ColorError::InvalidOperation(msg) => write!(f, "Invalid operation attempted: {}", msg),
             ColorError::ColorManipulation(msg) => write!(f, "Color manipulation error: {}", msg),
+            ColorError::InvalidColorValue(msg) => write!(f, "Invalid color value: {}", msg),
         }
     }
 }
@@ -75,4 +81,4 @@ impl From<std::env::VarError> for ColorError {
     fn from(err: std::env::VarError) -> Self {
         ColorError::EnvError(err)
     }
-} 
+}
