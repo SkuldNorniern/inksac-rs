@@ -26,9 +26,9 @@ const UNDERLINE_CODE: &str = "4";
 
 // Color base codes
 #[allow(dead_code)]
-const FG_BASE: &str = "3";  // 30-37 for foreground
+const FG_BASE: &str = "3"; // 30-37 for foreground
 #[allow(dead_code)]
-const BG_BASE: &str = "4";  // 40-47 for background
+const BG_BASE: &str = "4"; // 40-47 for background
 
 // RGB color base codes
 const RGB_FG_BASE: &str = "38";

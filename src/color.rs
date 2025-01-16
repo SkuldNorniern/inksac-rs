@@ -36,10 +36,10 @@
 //! }
 //! ```
 
+use crate::ansi;
 use crate::check_color_support;
 use crate::error::{ColorError, ColorSupport};
 use std::borrow::Cow;
-use crate::ansi;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Color {
