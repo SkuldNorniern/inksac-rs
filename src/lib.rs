@@ -175,6 +175,134 @@ pub fn is_color_available() -> Result<(), ColorError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::env;
+
+    // Helper function to set and unset environment variables for testing
+    fn with_env_vars<F>(vars: &[(&str, Option<&str>)], test: F) -> ColorSupport
+    where
+        F: FnOnce() -> Result<ColorSupport, ColorError>
+    {
+        // List of all color-related environment variables we need to control
+        let color_vars = [
+            "NO_COLOR",
+            "COLORTERM",
+            "TERM",
+            "CLICOLOR",
+            "CLICOLOR_FORCE",
+        ];
+
+        // Store original values for all color-related vars
+        let original: Vec<(String, Option<String>)> = color_vars
+            .iter()
+            .map(|&name| (name.to_string(), env::var(name).ok()))
+            .collect();
+
+        // First, clear all color-related environment variables
+        for var in color_vars {
+            env::remove_var(var);
+        }
+
+        // Then set only the test-specific variables
+        for (name, value) in vars {
+            match value {
+                Some(v) => env::set_var(name, v),
+                None => env::remove_var(name),
+            }
+        }
+
+        // Run test
+        let result = test();
+
+        // Restore original values
+        for (name, value) in original {
+            match value {
+                Some(v) => env::set_var(name, v),
+                None => env::remove_var(&name),
+            }
+        }
+
+        result.expect("Color support check failed")
+    }
+
+    #[test]
+    fn test_no_color_env() {
+        let support = with_env_vars(&[
+            ("NO_COLOR", Some("")),
+            ("TERM", None),
+            ("COLORTERM", None),
+        ], check_color_support);
+        assert_eq!(support, ColorSupport::NoColor);
+    }
+
+    #[test]
+    fn test_true_color_support() {
+        let support = with_env_vars(&[
+            ("NO_COLOR", None),
+            ("COLORTERM", Some("truecolor")),
+        ], check_color_support);
+        assert_eq!(support, ColorSupport::TrueColor);
+
+        let support = with_env_vars(&[
+            ("NO_COLOR", None),
+            ("COLORTERM", Some("24bit")),
+        ], check_color_support);
+        assert_eq!(support, ColorSupport::TrueColor);
+    }
+
+    #[test]
+    fn test_256_color_support() {
+        let support = with_env_vars(&[
+            ("NO_COLOR", None),
+            ("COLORTERM", None),
+            ("TERM", Some("xterm-256color")),
+        ], check_color_support);
+        assert_eq!(support, ColorSupport::Color256);
+    }
+
+    #[test]
+    fn test_basic_color_support() {
+        let support = with_env_vars(&[
+            ("NO_COLOR", None),
+            ("COLORTERM", None),
+            ("TERM", Some("xterm")),
+        ], check_color_support);
+        assert_eq!(support, ColorSupport::Basic);
+    }
+
+    #[test]
+    fn test_clicolor_force() {
+        let support = with_env_vars(&[
+            ("CLICOLOR_FORCE", Some("1")),
+            // Explicitly set these to None to ensure they're cleared
+            ("NO_COLOR", None),
+            ("COLORTERM", None),
+            ("TERM", None),
+        ], check_color_support);
+        assert_eq!(support, ColorSupport::Basic);
+    }
+
+    #[test]
+    fn test_clicolor_disable() {
+        let support = with_env_vars(&[
+            ("CLICOLOR", Some("0")),
+            // Explicitly set these to None to ensure they're cleared
+            ("NO_COLOR", None),
+            ("COLORTERM", None),
+            ("TERM", Some("xterm-256color")), // Should be ignored when CLICOLOR=0
+            ("CLICOLOR_FORCE", None),
+        ], check_color_support);
+        assert_eq!(support, ColorSupport::NoColor);
+    }
+
+    #[test]
+    fn test_no_term_env() {
+        let support = with_env_vars(&[
+            ("NO_COLOR", None),
+            ("COLORTERM", None),
+            ("TERM", None),
+        ], check_color_support);
+        assert_eq!(support, ColorSupport::NoColor);
+    }
 
     #[test]
     fn test_style_builder() {
