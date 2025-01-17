@@ -305,6 +305,9 @@ mod tests {
                 ("NO_COLOR", None),
                 ("COLORTERM", None),
                 ("TERM", Some("xterm")),
+                ("TERM_PROGRAM", Some("test")),
+                ("CLICOLOR", Some("1")),
+                ("CLICOLOR_FORCE", Some("1")),
             ],
             || check_color_support().expect("Color support check failed"),
         );

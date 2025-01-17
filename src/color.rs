@@ -40,6 +40,7 @@ use crate::ansi;
 use crate::check_color_support;
 use crate::error::{ColorError, ColorSupport};
 use std::borrow::Cow;
+use std::env;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Color {
@@ -385,11 +386,60 @@ impl Color {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::env;
+
+    fn with_test_env<F, T>(test: F) -> T
+    where
+        F: FnOnce() -> T,
+    {
+        let vars = [
+            ("NO_COLOR", None),
+            ("COLORTERM", Some("truecolor")),
+            ("TERM", Some("xterm-256color")),
+            ("TERM_PROGRAM", Some("test")),
+            ("CLICOLOR", Some("1")),
+            ("CLICOLOR_FORCE", Some("1")),
+        ];
+
+        // Store original environment
+        let original: Vec<(String, Option<String>)> = vars
+            .iter()
+            .map(|(name, _)| (name.to_string(), env::var(name).ok()))
+            .collect();
+
+        // Clear all color-related environment variables first
+        for (name, _) in &vars {
+            env::remove_var(name);
+        }
+
+        // Set test environment
+        for (name, value) in vars {
+            match value {
+                Some(v) => env::set_var(name, v),
+                None => env::remove_var(name),
+            }
+        }
+
+        // Run test
+        let result = test();
+
+        // Restore original environment
+        for (name, value) in original {
+            match value {
+                Some(v) => env::set_var(name, v),
+                None => env::remove_var(&name),
+            }
+        }
+
+        result
+    }
 
     #[test]
     fn test_rgb_color() {
-        let color = Color::new_rgb(255, 128, 0);
-        assert!(color.is_ok());
+        with_test_env(|| {
+            let color = Color::new_rgb(255, 128, 0);
+            assert!(color.is_ok());
+        });
     }
 
     #[test]
@@ -402,20 +452,24 @@ mod tests {
 
     #[test]
     fn test_hsv_color() {
-        let color = Color::new_hsv(0, 100, 100); // Pure red
-        assert!(color.is_ok());
+        with_test_env(|| {
+            let color = Color::new_hsv(0, 100, 100); // Pure red
+            assert!(color.is_ok());
 
-        let invalid_color = Color::new_hsv(361, 100, 100);
-        assert!(invalid_color.is_err());
+            let invalid_color = Color::new_hsv(361, 100, 100);
+            assert!(invalid_color.is_err());
+        });
     }
 
     #[test]
     fn test_hsl_color() {
-        let color = Color::new_hsl(120, 100, 50); // Pure green
-        assert!(color.is_ok());
+        with_test_env(|| {
+            let color = Color::new_hsl(120, 100, 50); // Pure green
+            assert!(color.is_ok());
 
-        let invalid_color = Color::new_hsl(0, 101, 50);
-        assert!(invalid_color.is_err());
+            let invalid_color = Color::new_hsl(0, 101, 50);
+            assert!(invalid_color.is_err());
+        });
     }
 
     #[test]
