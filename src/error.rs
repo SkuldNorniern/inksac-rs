@@ -64,7 +64,7 @@ impl std::fmt::Display for ColorError {
             ColorError::InvalidRGB(msg) => write!(f, "Invalid RGB values: {}", msg),
             ColorError::UnsupportedColorMode(req, avail) => write!(
                 f,
-                "Terminal doesn't support {:?} (available: {:?})",
+                "Terminal doesn't support {} (available: {})",
                 req, avail
             ),
             ColorError::EnvError(e) => write!(f, "Environment error: {}", e),
