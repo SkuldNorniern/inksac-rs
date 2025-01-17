@@ -279,10 +279,9 @@ mod tests {
         );
         assert_eq!(support, ColorSupport::TrueColor);
 
-        let support = with_env_vars(
-            &[("NO_COLOR", None), ("COLORTERM", Some("24bit"))],
-            || check_color_support().expect("Color support check failed"),
-        );
+        let support = with_env_vars(&[("NO_COLOR", None), ("COLORTERM", Some("24bit"))], || {
+            check_color_support().expect("Color support check failed")
+        });
         assert_eq!(support, ColorSupport::TrueColor);
     }
 
