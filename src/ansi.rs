@@ -62,11 +62,49 @@ pub const BG_CYAN: &str = "\x1b[46m";
 pub const BG_WHITE: &str = "\x1b[47m";
 
 /// Creates an RGB foreground color code
+///
+/// # Arguments
+/// * `r` - Red component (0-255)
+/// * `g` - Green component (0-255)
+/// * `b` - Blue component (0-255)
+///
+/// # Returns
+/// * `String` - The ANSI escape sequence for the RGB foreground color
 pub(crate) fn fg_rgb(r: u8, g: u8, b: u8) -> String {
     format!("{}{};2;{};{};{}{}", ESC_BASE, RGB_FG_BASE, r, g, b, SUFFIX)
 }
 
+/// Creates a 256-color foreground code
+///
+/// # Arguments
+/// * `code` - The 256-color code (16-255)
+///
+/// # Returns
+/// * `String` - The ANSI escape sequence for the 256-color foreground color
+pub(crate) fn fg_256(code: u8) -> String {
+    format!("{}{};5;{}m", ESC_BASE, RGB_FG_BASE, code)
+}
+
 /// Creates an RGB background color code
+///
+/// # Arguments
+/// * `r` - Red component (0-255)
+/// * `g` - Green component (0-255)
+/// * `b` - Blue component (0-255)
+///
+/// # Returns
+/// * `String` - The ANSI escape sequence for the RGB background color
 pub(crate) fn bg_rgb(r: u8, g: u8, b: u8) -> String {
     format!("{}{};2;{};{};{}{}", ESC_BASE, RGB_BG_BASE, r, g, b, SUFFIX)
+}
+
+/// Creates a 256-color background code
+///
+/// # Arguments
+/// * `code` - The 256-color code (16-255)
+///
+/// # Returns
+/// * `String` - The ANSI escape sequence for the 256-color background color
+pub(crate) fn bg_256(code: u8) -> String {
+    format!("{}{};5;{}m", ESC_BASE, RGB_BG_BASE, code)
 }
