@@ -1,4 +1,5 @@
 use super::basic::Color;
+use crate::ColorError;
 
 impl Color {
     /// Convert HSV (Hue, Saturation, Value) color values to RGB
@@ -10,7 +11,7 @@ impl Color {
     ///
     /// # Returns
     /// * `(u8, u8, u8)` - RGB color components (0-255)
-    pub(crate) fn hsv_to_rgb(h: u16, s: u8, v: u8) -> (u8, u8, u8) {
+    pub(crate) fn hsv_to_rgb(h: u16, s: u8, v: u8) -> Result<(u8, u8, u8), ColorError> {
         let h = f32::from(h) / 60.0;
         let s = f32::from(s) / 100.0;
         let v = f32::from(v) / 100.0;
@@ -29,11 +30,15 @@ impl Color {
             _ => (0.0, 0.0, 0.0),
         };
 
-        (
-            ((r + m) * 255.0) as u8,
-            ((g + m) * 255.0) as u8,
-            ((b + m) * 255.0) as u8,
-        )
+        let r = ((r + m) * 255.0).round();
+        let g = ((g + m) * 255.0).round();
+        let b = ((b + m) * 255.0).round();
+
+        if r < 0.0 || r > 255.0 || g < 0.0 || g > 255.0 || b < 0.0 || b > 255.0 {
+            return Err(ColorError::ColorManipulation("RGB values out of range".into()));
+        }
+
+        Ok((r as u8, g as u8, b as u8))
     }
 
     /// Convert HSL (Hue, Saturation, Lightness) color values to RGB
@@ -45,7 +50,11 @@ impl Color {
     ///
     /// # Returns
     /// * `(u8, u8, u8)` - RGB color components (0-255)
-    pub(crate) fn hsl_to_rgb(h: u16, s: u8, l: u8) -> (u8, u8, u8) {
+    pub(crate) fn hsl_to_rgb(h: u16, s: u8, l: u8) -> Result<(u8, u8, u8), ColorError> {
+        if h > 360 || s > 100 || l > 100 {
+            return Err(ColorError::InvalidColorValue("HSL values out of range".into()));
+        }
+
         let h = f32::from(h) / 360.0;
         let s = f32::from(s) / 100.0;
         let l = f32::from(l) / 100.0;
@@ -64,11 +73,11 @@ impl Color {
             _ => (0.0, 0.0, 0.0),
         };
 
-        (
-            ((r + m) * 255.0) as u8,
-            ((g + m) * 255.0) as u8,
-            ((b + m) * 255.0) as u8,
-        )
+        let r = ((r + m) * 255.0) as u8;
+        let g = ((g + m) * 255.0) as u8;
+        let b = ((b + m) * 255.0) as u8;
+
+        Ok((r, g, b))
     }
 
     /// Convert RGB color values to the nearest 256-color code
@@ -265,19 +274,27 @@ mod tests {
 
     #[test]
     fn test_hsv_to_rgb_conversion() {
-        let (r, g, b) = Color::hsv_to_rgb(0, 100, 100);
+        let Ok((r, g, b)) = Color::hsv_to_rgb(0, 100, 100) else {
+            panic!("Failed to convert HSV to RGB");
+        };
         assert_eq!((r, g, b), (255, 0, 0)); // Pure red
 
-        let (r, g, b) = Color::hsv_to_rgb(120, 100, 100);
+        let Ok((r, g, b)) = Color::hsv_to_rgb(120, 100, 100) else {
+            panic!("Failed to convert HSV to RGB");
+        };
         assert_eq!((r, g, b), (0, 255, 0)); // Pure green
     }
 
     #[test]
     fn test_hsl_to_rgb_conversion() {
-        let (r, g, b) = Color::hsl_to_rgb(0, 100, 50);
+        let Ok((r, g, b)) = Color::hsl_to_rgb(0, 100, 50) else {
+            panic!("Failed to convert HSL to RGB");
+        };
         assert_eq!((r, g, b), (255, 0, 0)); // Pure red
 
-        let (r, g, b) = Color::hsl_to_rgb(240, 100, 50);
+        let Ok((r, g, b)) = Color::hsl_to_rgb(240, 100, 50) else {
+            panic!("Failed to convert HSL to RGB");
+        };
         assert_eq!((r, g, b), (0, 0, 255)); // Pure blue
     }
 
