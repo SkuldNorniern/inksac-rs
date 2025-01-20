@@ -71,7 +71,7 @@ pub const BG_WHITE: &str = "\x1b[47m";
 /// # Returns
 /// * `String` - The ANSI escape sequence for the RGB foreground color
 pub(crate) fn fg_rgb(r: u8, g: u8, b: u8) -> String {
-    if r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255 {
+    if !(0..=255).contains(&r) || !(0..=255).contains(&g) || !(0..=255).contains(&b) {
         panic!("RGB color components must be between 0 and 255, this should be checked on construction of the color");
     }
     format!("{}{};2;{};{};{}{}", ESC_BASE, RGB_FG_BASE, r, g, b, SUFFIX)
@@ -85,7 +85,7 @@ pub(crate) fn fg_rgb(r: u8, g: u8, b: u8) -> String {
 /// # Returns
 /// * `String` - The ANSI escape sequence for the 256-color foreground color
 pub(crate) fn fg_256(code: u8) -> String {
-    if code < 16 || code > 255 {
+    if !(16..=255).contains(&code) {
         panic!("256-color code must be >= 16 and <= 255, this should be checked on construction of the color");
     }
     format!("{}{};5;{}m", ESC_BASE, RGB_FG_BASE, code)
@@ -101,7 +101,7 @@ pub(crate) fn fg_256(code: u8) -> String {
 /// # Returns
 /// * `String` - The ANSI escape sequence for the RGB background color
 pub(crate) fn bg_rgb(r: u8, g: u8, b: u8) -> String {
-    if r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255 {
+    if !(0..=255).contains(&r) || !(0..=255).contains(&g) || !(0..=255).contains(&b) {
         panic!("RGB color components must be between 0 and 255, this should be checked on construction of the color");
     }
     format!("{}{};2;{};{};{}{}", ESC_BASE, RGB_BG_BASE, r, g, b, SUFFIX)
@@ -115,7 +115,7 @@ pub(crate) fn bg_rgb(r: u8, g: u8, b: u8) -> String {
 /// # Returns
 /// * `String` - The ANSI escape sequence for the 256-color background color
 pub(crate) fn bg_256(code: u8) -> String {
-    if code < 16 || code > 255 {
+    if !(16..=255).contains(&code) {
         panic!("256-color code must be >= 16 and <= 255, this should be checked on construction of the color");
     }
     format!("{}{};5;{}m", ESC_BASE, RGB_BG_BASE, code)
