@@ -12,7 +12,6 @@
 //! ```
 //!  
 
-
 use crate::ansi;
 use crate::check_color_support;
 use crate::env::ColorSupport;
@@ -107,7 +106,7 @@ impl Color {
         }
     }
 
-    pub(crate)fn validate_hex(hex: &str) -> Result<(u8, u8, u8), ColorError> {
+    pub(crate) fn validate_hex(hex: &str) -> Result<(u8, u8, u8), ColorError> {
         let hex = hex
             .strip_prefix('#')
             .ok_or_else(|| ColorError::InvalidHexCode(hex.to_string()))?;
@@ -251,6 +250,4 @@ impl Color {
             )),
         }
     }
-
-    
 }

@@ -57,13 +57,11 @@ impl std::fmt::Display for ColorSupport {
 pub fn check_color_support() -> Result<ColorSupport, ColorError> {
     // Handle NO_COLOR first as it takes absolute precedence
     if env::var("NO_COLOR").is_ok() {
-        println!("NO_COLOR is set");
         return Ok(ColorSupport::NoColor);
     }
 
     let clicolor = env::var("CLICOLOR").unwrap_or_default();
     if clicolor == "0" {
-        println!("CLICOLOR is set to 0");
         return Ok(ColorSupport::NoColor);
     }
 
@@ -73,7 +71,6 @@ pub fn check_color_support() -> Result<ColorSupport, ColorError> {
     let colorterm = env::var("COLORTERM").unwrap_or_default();
     if colorterm.contains("truecolor") || colorterm.contains("24bit") {
         support = ColorSupport::TrueColor;
-        println!("COLORTERM is set to truecolor");
     }
 
     let term = env::var("TERM").unwrap_or_default().to_lowercase();
@@ -96,28 +93,24 @@ pub fn check_color_support() -> Result<ColorSupport, ColorError> {
     ];
     if truecolor_terms.iter().any(|&t| term.contains(t)) {
         support = ColorSupport::TrueColor;
-        println!("TERM is set to truecolor");
     }
 
     // Check TERM_PROGRAM for specific terminals that support true color
     let term_program = env::var("TERM_PROGRAM").unwrap_or_default();
     if ["iTerm.app", "Apple_Terminal", "Hyper"].contains(&term_program.as_str()) {
         support = ColorSupport::TrueColor;
-        println!("TERM_PROGRAM is set to truecolor");
     }
 
     // If no true color support was detected, check for 256 colors or basic colors
     if support == ColorSupport::NoColor {
         if term.contains("256color") || term.contains("256") {
             support = ColorSupport::Color256;
-            println!("TERM is set to 256color");
         } else if term.contains("color")
             || term.contains("ansi")
             || term.contains("xterm")
             || term.contains("screen")
         {
             support = ColorSupport::Basic;
-            println!("TERM is set to basic");
         }
     }
 
@@ -128,7 +121,6 @@ pub fn check_color_support() -> Result<ColorSupport, ColorError> {
         // Otherwise, keep the highest detected support level
         if support == ColorSupport::NoColor {
             support = ColorSupport::Basic;
-            println!("CLICOLOR_FORCE is set to 1");
         }
     }
 

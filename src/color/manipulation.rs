@@ -76,5 +76,4 @@ impl Color {
 }
 
 #[cfg(test)]
-mod tests {
-} 
+mod tests {}
