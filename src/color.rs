@@ -38,9 +38,9 @@
 
 use crate::ansi;
 use crate::check_color_support;
-use crate::error::{ColorError, ColorSupport};
+use crate::error::ColorError;
+use crate::env::ColorSupport;
 use std::borrow::Cow;
-use std::env;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Color {
@@ -433,7 +433,7 @@ mod tests {
 
         result
     }
-
+    
     #[test]
     fn test_rgb_color() {
         with_test_env(|| {

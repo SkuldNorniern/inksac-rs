@@ -17,6 +17,7 @@
 //! }
 //! ```
 
+use crate::env::ColorSupport;
 /// Represents errors that can occur when working with colors
 #[derive(Debug)]
 pub enum ColorError {
@@ -38,24 +39,6 @@ pub enum ColorError {
     InvalidColorValue(String),
 }
 
-/// Terminal color support levels
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ColorSupport {
-    NoColor,
-    Basic,     // 16 colors
-    Color256,  // 256 colors
-    TrueColor, // 16 million colors
-}
-impl std::fmt::Display for ColorSupport {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ColorSupport::NoColor => write!(f, "No Color"),
-            ColorSupport::Basic => write!(f, "Basic"),
-            ColorSupport::Color256 => write!(f, "Color256"),
-            ColorSupport::TrueColor => write!(f, "TrueColor"),
-        }
-    }
-}
 impl std::fmt::Display for ColorError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
