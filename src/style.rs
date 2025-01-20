@@ -187,7 +187,11 @@ mod tests {
 
     #[test]
     fn test_style_builder() {
-        run_with_env_vars(&[("COLORTERM", Some("truecolor"))], || {
+        run_with_env_vars(&[
+            ("COLORTERM", Some("truecolor")),
+            ("TERM", Some("xterm-256color")),
+            ("NO_COLOR", None),
+        ], || {
             let style = Style::builder()
                 .foreground(Color::Red)
                 .background(Color::Blue)
@@ -206,7 +210,11 @@ mod tests {
 
     #[test]
     fn test_style_display() {
-        run_with_env_vars(&[("COLORTERM", Some("truecolor"))], || {
+        run_with_env_vars(&[
+            ("COLORTERM", Some("truecolor")),
+            ("TERM", Some("xterm-256color")),
+            ("NO_COLOR", None),
+        ], || {
             let style = Style::builder().foreground(Color::Red).bold().build();
 
             let output = style.to_string();

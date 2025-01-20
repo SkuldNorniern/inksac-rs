@@ -271,7 +271,11 @@ mod tests {
 
     #[test]
     fn test_new_rgb() {
-        run_with_env_vars(&[("COLORTERM", Some("truecolor"))], || {
+        run_with_env_vars(&[
+            ("COLORTERM", Some("truecolor")),
+            ("TERM", Some("xterm-256color")),
+            ("NO_COLOR", None),
+        ], || {
             let color = Color::new_rgb(255, 128, 0).unwrap();
             if let Color::RGB(r, g, b) = color {
                 assert_eq!(r, 255);
@@ -283,7 +287,11 @@ mod tests {
 
     #[test]
     fn test_new_hex() {
-        run_with_env_vars(&[("COLORTERM", Some("truecolor"))], || {
+        run_with_env_vars(&[
+            ("COLORTERM", Some("truecolor")),
+            ("TERM", Some("xterm-256color")),
+            ("NO_COLOR", None),
+        ], || {
             let color = Color::new_hex("#FF8000").unwrap();
             if let Color::HEX(hex) = color {
                 assert_eq!(hex, "#FF8000");

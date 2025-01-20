@@ -246,13 +246,45 @@ pub(crate) mod tests {
     where
         F: FnOnce() -> T,
     {
-        let env = get_test_env()
-            .lock()
-            .expect("Failed to lock test environment");
-        env.set_vars(vars)
-            .expect("Failed to set environment variables");
+        // Store original env vars
+        let original: Vec<(String, Option<String>)> = vars
+            .iter()
+            .map(|(k, _)| (k.to_string(), env::var(k).ok()))
+            .collect();
+
+        // Check if we're running in a CI environment
+        let is_ci = env::var("CI").is_ok() 
+            || env::var("GITHUB_ACTIONS").is_ok()
+            || env::var("GITLAB_CI").is_ok()
+            || env::var("TRAVIS").is_ok()
+            || env::var("CIRCLECI").is_ok();
+
+        // If in CI, always set color support
+        if is_ci {
+            env::set_var("COLORTERM", "truecolor");
+            env::set_var("TERM", "xterm-256color");
+            env::remove_var("NO_COLOR");
+        }
+
+        // Set test-specific env vars
+        for (key, value) in vars {
+            match value {
+                Some(v) => env::set_var(key, v),
+                None => env::remove_var(key),
+            }
+        }
+
+        // Run the test
         let result = test();
-        env.reset();
+
+        // Restore original env vars
+        for (key, value) in original {
+            match value {
+                Some(v) => env::set_var(&key, v),
+                None => env::remove_var(&key),
+            }
+        }
+
         result
     }
 
