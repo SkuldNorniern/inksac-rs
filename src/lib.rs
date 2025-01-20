@@ -80,27 +80,26 @@
 
 mod ansi;
 mod color;
+mod env;
 mod error;
 mod string;
 mod style;
-mod env;
 
 // Add prelude module
 pub mod prelude {
     pub use crate::color::Color;
+    pub use crate::env::{check_color_support, is_color_available, ColorSupport};
     pub use crate::error::ColorError;
     pub use crate::string::{ColoredString, Styleable};
     pub use crate::style::{Style, StyleBuilder};
-    pub use crate::env::{check_color_support, is_color_available, ColorSupport};
 }
 
 // Keep existing pub use statements for backward compatibility
 pub use color::Color;
+pub use env::{check_color_support, is_color_available, ColorSupport};
 pub use error::ColorError;
 pub use string::{ColoredString, Styleable};
 pub use style::{Style, StyleBuilder};
-pub use env::{check_color_support, is_color_available, ColorSupport};
-
 
 #[cfg(test)]
 mod tests {

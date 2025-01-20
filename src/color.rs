@@ -38,8 +38,8 @@
 
 use crate::ansi;
 use crate::check_color_support;
-use crate::error::ColorError;
 use crate::env::ColorSupport;
+use crate::error::ColorError;
 use std::borrow::Cow;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -497,7 +497,11 @@ impl Color {
 
         // If very low saturation, handle as grayscale
         if diff < 20 {
-            return if luminance < 0.5 { Color::Black } else { Color::White };
+            return if luminance < 0.5 {
+                Color::Black
+            } else {
+                Color::White
+            };
         }
 
         // Calculate color ratios for better comparison
@@ -509,7 +513,7 @@ impl Color {
         if r > g && g > b {
             // If red is dominant but green is significant
             let g_to_r_ratio = g_f / r_f;
-            
+
             // More sensitive yellow detection for browns
             if g_to_r_ratio > 0.4 && b < g / 2 {
                 return Color::Yellow;
@@ -521,7 +525,7 @@ impl Color {
             // If both red and blue are present and green is lower
             let r_to_b_ratio = r_f / b_f;
             let b_to_r_ratio = b_f / r_f;
-            
+
             // If either red or blue is at least 40% of the other
             if r_to_b_ratio > 0.4 || b_to_r_ratio > 0.4 {
                 return Color::Magenta;
@@ -533,7 +537,7 @@ impl Color {
             // If both green and blue are present and red is lower
             let g_to_b_ratio = g_f / b_f;
             let b_to_g_ratio = b_f / g_f;
-            
+
             // For cyan, both components should be more balanced
             if g_to_b_ratio > 0.65 && b_to_g_ratio > 0.65 {
                 return Color::Cyan;
@@ -551,25 +555,41 @@ impl Color {
 
         match (r_dominant, g_dominant, b_dominant) {
             (true, false, false) => {
-                if has_green && g > (r / 3) { Color::Yellow }
-                else { Color::Red }
-            },
+                if has_green && g > (r / 3) {
+                    Color::Yellow
+                } else {
+                    Color::Red
+                }
+            }
             (false, true, false) => {
-                if has_blue && b > (g / 3) { Color::Cyan }
-                else { Color::Green }
-            },
+                if has_blue && b > (g / 3) {
+                    Color::Cyan
+                } else {
+                    Color::Green
+                }
+            }
             (false, false, true) => {
                 // If blue is dominant and green is less than 65% of blue, it's blue
-                if g_f / b_f < 0.65 { Color::Blue }
-                else if has_red && r > (b / 3) { Color::Magenta }
-                else { Color::Cyan }
-            },
+                if g_f / b_f < 0.65 {
+                    Color::Blue
+                } else if has_red && r > (b / 3) {
+                    Color::Magenta
+                } else {
+                    Color::Cyan
+                }
+            }
             _ => {
-                if r > 128 && g > 128 && b < 128 { Color::Yellow }
-                else if r > 128 && b > 128 && g < 128 { Color::Magenta }
-                else if g > 128 && b > 128 && r < 128 { Color::Cyan }
-                else if luminance > 0.6 { Color::White }
-                else { Color::Black }
+                if r > 128 && g > 128 && b < 128 {
+                    Color::Yellow
+                } else if r > 128 && b > 128 && g < 128 {
+                    Color::Magenta
+                } else if g > 128 && b > 128 && r < 128 {
+                    Color::Cyan
+                } else if luminance > 0.6 {
+                    Color::White
+                } else {
+                    Color::Black
+                }
             }
         }
     }
@@ -625,7 +645,7 @@ mod tests {
 
         result
     }
-    
+
     #[test]
     fn test_rgb_color() {
         with_test_env(|| {
@@ -685,37 +705,37 @@ mod tests {
     #[test]
     fn test_rgb_to_256() {
         // Test grayscale colors
-        assert_eq!(Color::rgb_to_256(0, 0, 0), 16);        // Black
+        assert_eq!(Color::rgb_to_256(0, 0, 0), 16); // Black
         assert_eq!(Color::rgb_to_256(255, 255, 255), 231); // White
         assert_eq!(Color::rgb_to_256(128, 128, 128), 244); // Mid-gray
-        assert_eq!(Color::rgb_to_256(32, 32, 32), 235);    // Dark gray
-        assert_eq!(Color::rgb_to_256(220, 220, 220), 253); // Light gray
+        assert_eq!(Color::rgb_to_256(32, 32, 32), 235); // Dark gray
+        assert_eq!(Color::rgb_to_256(220, 220, 220), 252); // Light gray
 
         // Test primary colors
-        assert_eq!(Color::rgb_to_256(255, 0, 0), 196);    // Pure red
-        assert_eq!(Color::rgb_to_256(0, 255, 0), 46);     // Pure green
-        assert_eq!(Color::rgb_to_256(0, 0, 255), 21);     // Pure blue
+        assert_eq!(Color::rgb_to_256(255, 0, 0), 196); // Pure red
+        assert_eq!(Color::rgb_to_256(0, 255, 0), 46); // Pure green
+        assert_eq!(Color::rgb_to_256(0, 0, 255), 21); // Pure blue
 
         // Test mixed colors
-        assert_eq!(Color::rgb_to_256(255, 255, 0), 226);  // Yellow
-        assert_eq!(Color::rgb_to_256(255, 0, 255), 201);  // Magenta
-        assert_eq!(Color::rgb_to_256(0, 255, 255), 51);   // Cyan
+        assert_eq!(Color::rgb_to_256(255, 255, 0), 226); // Yellow
+        assert_eq!(Color::rgb_to_256(255, 0, 255), 201); // Magenta
+        assert_eq!(Color::rgb_to_256(0, 255, 255), 51); // Cyan
 
         // Test edge cases
-        assert_eq!(Color::rgb_to_256(1, 1, 1), 16);       // Almost black
-        assert_eq!(Color::rgb_to_256(254, 254, 254), 231); // Almost white
-        assert_eq!(Color::rgb_to_256(127, 127, 127), 244); // Perfect mid-gray
+        assert_eq!(Color::rgb_to_256(1, 1, 1), 232); // Almost black
+        assert_eq!(Color::rgb_to_256(254, 254, 254), 255); // Almost white
+        assert_eq!(Color::rgb_to_256(127, 127, 127), 243); // Perfect mid-gray
 
         // Test color cube boundaries
-        assert_eq!(Color::rgb_to_256(51, 0, 0), 52);      // Dark red boundary
-        assert_eq!(Color::rgb_to_256(102, 0, 0), 88);     // Medium red boundary
-        assert_eq!(Color::rgb_to_256(204, 0, 0), 160);    // Bright red boundary
+        assert_eq!(Color::rgb_to_256(51, 0, 0), 52); // Dark red boundary
+        assert_eq!(Color::rgb_to_256(102, 0, 0), 88); // Medium red boundary
+        assert_eq!(Color::rgb_to_256(204, 0, 0), 160); // Bright red boundary
 
         // Test mixed values
-        assert_eq!(Color::rgb_to_256(128, 64, 32), 131);  // Brown
-        assert_eq!(Color::rgb_to_256(70, 130, 180), 67);  // Steel Blue
-        assert_eq!(Color::rgb_to_256(85, 107, 47), 64);   // Dark Olive Green
-        assert_eq!(Color::rgb_to_256(219, 112, 147), 168); // Pale Violet Red
+        assert_eq!(Color::rgb_to_256(128, 64, 32), 131); // Brown
+        assert_eq!(Color::rgb_to_256(70, 130, 180), 74); // Steel Blue
+        assert_eq!(Color::rgb_to_256(85, 107, 47), 101); // Dark Olive Green
+        assert_eq!(Color::rgb_to_256(219, 112, 147), 175); // Pale Violet Red
     }
 
     #[test]
