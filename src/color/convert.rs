@@ -34,7 +34,8 @@ impl Color {
         let g = ((g + m) * 255.0).round();
         let b = ((b + m) * 255.0).round();
 
-        if !(0.0..=255.0).contains(&r) || !(0.0..=255.0).contains(&g) || !(0.0..=255.0).contains(&b) {
+        if !(0.0..=255.0).contains(&r) || !(0.0..=255.0).contains(&g) || !(0.0..=255.0).contains(&b)
+        {
             return Err(ColorError::ColorManipulation(
                 "RGB values out of range".into(),
             ));
