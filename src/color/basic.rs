@@ -109,7 +109,8 @@ impl Color {
     }
 
     pub fn validate_hex(hex: &str) -> Result<(u8, u8, u8), ColorError> {
-        let hex = hex.strip_prefix('#')
+        let hex = hex
+            .strip_prefix('#')
             .ok_or_else(|| ColorError::InvalidHexCode(hex.to_string()))?;
 
         if hex.len() != 6 {
@@ -153,13 +154,15 @@ impl Color {
                 Cow::Owned(ansi::fg_rgb(r, g, b))
             }
             Color::HSV(h, s, v) => {
-                let (r, g, b) = Self::hsv_to_rgb(h, s, v)
-                    .expect("Failed to convert HSV to RGB - this should be validated at construction");
+                let (r, g, b) = Self::hsv_to_rgb(h, s, v).expect(
+                    "Failed to convert HSV to RGB - this should be validated at construction",
+                );
                 Cow::Owned(ansi::fg_rgb(r, g, b))
             }
             Color::HSL(h, s, l) => {
-                let (r, g, b) = Self::hsl_to_rgb(h, s, l)
-                    .expect("Failed to convert HSL to RGB - this should be validated at construction");
+                let (r, g, b) = Self::hsl_to_rgb(h, s, l).expect(
+                    "Failed to convert HSL to RGB - this should be validated at construction",
+                );
                 Cow::Owned(ansi::fg_rgb(r, g, b))
             }
         }
@@ -192,13 +195,15 @@ impl Color {
                 Cow::Owned(ansi::bg_rgb(r, g, b))
             }
             Color::HSV(h, s, v) => {
-                let (r, g, b) = Self::hsv_to_rgb(h, s, v)
-                    .expect("Failed to convert HSV to RGB - this should be validated at construction");
+                let (r, g, b) = Self::hsv_to_rgb(h, s, v).expect(
+                    "Failed to convert HSV to RGB - this should be validated at construction",
+                );
                 Cow::Owned(ansi::bg_rgb(r, g, b))
             }
             Color::HSL(h, s, l) => {
-                let (r, g, b) = Self::hsl_to_rgb(h, s, l)
-                    .expect("Failed to convert HSL to RGB - this should be validated at construction");
+                let (r, g, b) = Self::hsl_to_rgb(h, s, l).expect(
+                    "Failed to convert HSL to RGB - this should be validated at construction",
+                );
                 Cow::Owned(ansi::bg_rgb(r, g, b))
             }
         }

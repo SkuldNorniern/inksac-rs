@@ -112,8 +112,8 @@ impl Style {
 
     /// Add method to check if a style would override another
     pub fn would_override(&self, other: &Style) -> bool {
-        (self.foreground != Color::Empty && other.foreground != Color::Empty) ||
-        (self.background != Color::Empty && other.background != Color::Empty)
+        (self.foreground != Color::Empty && other.foreground != Color::Empty)
+            || (self.background != Color::Empty && other.background != Color::Empty)
     }
 }
 
