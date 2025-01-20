@@ -528,6 +528,18 @@ impl Color {
             }
         }
 
+        // Special case for cyans
+        if g > 0 && b > 0 && r < g && r < b {
+            // If both green and blue are present and red is lower
+            let g_to_b_ratio = g_f / b_f;
+            let b_to_g_ratio = b_f / g_f;
+            
+            // For cyan, both components should be more balanced
+            if g_to_b_ratio > 0.65 && b_to_g_ratio > 0.65 {
+                return Color::Cyan;
+            }
+        }
+
         let r_dominant = r_ratio >= g_ratio && r_ratio >= b_ratio;
         let g_dominant = g_ratio >= r_ratio && g_ratio >= b_ratio;
         let b_dominant = b_ratio >= r_ratio && b_ratio >= g_ratio;
@@ -537,23 +549,20 @@ impl Color {
         let has_green = g > 64;
         let has_blue = b > 64;
 
-        // Special case for cyans
-        if has_green && has_blue && g > r && b > r {
-            return Color::Cyan;
-        }
-
         match (r_dominant, g_dominant, b_dominant) {
             (true, false, false) => {
                 if has_green && g > (r / 3) { Color::Yellow }
                 else { Color::Red }
             },
             (false, true, false) => {
-                if has_blue && b > (g / 2) { Color::Cyan }
+                if has_blue && b > (g / 3) { Color::Cyan }
                 else { Color::Green }
             },
             (false, false, true) => {
-                if has_red && r > (b / 3) { Color::Magenta }
-                else { Color::Blue }
+                // If blue is dominant and green is less than 65% of blue, it's blue
+                if g_f / b_f < 0.65 { Color::Blue }
+                else if has_red && r > (b / 3) { Color::Magenta }
+                else { Color::Cyan }
             },
             _ => {
                 if r > 128 && g > 128 && b < 128 { Color::Yellow }
