@@ -57,11 +57,6 @@ impl ColoredString {
         }
     }
 
-    /// Get the original string without styling
-    pub fn to_no_style(&self) -> &str {
-        &self.string
-    }
-
     /// Apply additional style to existing ColoredString
     ///
     /// # Examples
