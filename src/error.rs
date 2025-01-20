@@ -44,7 +44,7 @@ pub enum ColorError {
     },
     ComponentOutOfRange {
         component: &'static str,
-        value: &'static str,   
+        value: &'static str,
         min: &'static str,
         max: &'static str,
     },
@@ -86,19 +86,54 @@ impl std::fmt::Display for ColorError {
             ColorError::ColorManipulation(msg) => write!(f, "Color manipulation error: {}", msg),
             ColorError::InvalidColorValue(msg) => write!(f, "Invalid color value: {}", msg),
             ColorError::ColorConversionError { from, to, reason } => {
-                write!(f, "Color conversion error: {} to {} failed: {}", from, to, reason)
+                write!(
+                    f,
+                    "Color conversion error: {} to {} failed: {}",
+                    from, to, reason
+                )
             }
-            ColorError::ComponentOutOfRange { component, value, min, max } => {
-                write!(f, "Component {} out of range: {} is not between {} and {}", component, value, min, max)
+            ColorError::ComponentOutOfRange {
+                component,
+                value,
+                min,
+                max,
+            } => {
+                write!(
+                    f,
+                    "Component {} out of range: {} is not between {} and {}",
+                    component, value, min, max
+                )
             }
-            ColorError::ValidationError { component, value, reason } => {
-                write!(f, "Validation error: {} is invalid: {}\n Reason: {}", component, value, reason)
+            ColorError::ValidationError {
+                component,
+                value,
+                reason,
+            } => {
+                write!(
+                    f,
+                    "Validation error: {} is invalid: {}\n Reason: {}",
+                    component, value, reason
+                )
             }
-            ColorError::TerminalError { requested, available, reason } => {
-                write!(f, "Terminal error: {} is not supported: {}\n Available: {}", requested, reason, available.unwrap_or("none"))
+            ColorError::TerminalError {
+                requested,
+                available,
+                reason,
+            } => {
+                write!(
+                    f,
+                    "Terminal error: {} is not supported: {}\n Available: {}",
+                    requested,
+                    reason,
+                    available.unwrap_or("none")
+                )
             }
             ColorError::ColorSpaceConversion { from, to, reason } => {
-                write!(f, "Color space conversion error: {} to {} failed: {}", from, to, reason)
+                write!(
+                    f,
+                    "Color space conversion error: {} to {} failed: {}",
+                    from, to, reason
+                )
             }
             ColorError::ColorCalculation(msg) => write!(f, "Color calculation error: {}", msg),
             ColorError::InterpolationError(msg) => write!(f, "Color interpolation error: {}", msg),
@@ -113,7 +148,6 @@ impl From<std::env::VarError> for ColorError {
         ColorError::EnvError(err)
     }
 }
-
 
 impl From<std::num::ParseFloatError> for ColorError {
     fn from(err: std::num::ParseFloatError) -> Self {

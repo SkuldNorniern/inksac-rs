@@ -35,7 +35,9 @@ impl Color {
         let b = ((b + m) * 255.0).round();
 
         if r < 0.0 || r > 255.0 || g < 0.0 || g > 255.0 || b < 0.0 || b > 255.0 {
-            return Err(ColorError::ColorManipulation("RGB values out of range".into()));
+            return Err(ColorError::ColorManipulation(
+                "RGB values out of range".into(),
+            ));
         }
 
         Ok((r as u8, g as u8, b as u8))
@@ -52,7 +54,9 @@ impl Color {
     /// * `(u8, u8, u8)` - RGB color components (0-255)
     pub(crate) fn hsl_to_rgb(h: u16, s: u8, l: u8) -> Result<(u8, u8, u8), ColorError> {
         if h > 360 || s > 100 || l > 100 {
-            return Err(ColorError::InvalidColorValue("HSL values out of range".into()));
+            return Err(ColorError::InvalidColorValue(
+                "HSL values out of range".into(),
+            ));
         }
 
         let h = f32::from(h) / 360.0;
