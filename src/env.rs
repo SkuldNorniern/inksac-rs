@@ -148,7 +148,7 @@ pub fn is_color_available() -> Result<(), ColorError> {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
     use crate::Color;
     use std::collections::HashMap;
@@ -157,8 +157,7 @@ mod tests {
 
     static TEST_ENV: OnceLock<Mutex<TestEnv>> = OnceLock::new();
 
-    /// Test environment that provides complete isolation for environment variables
-    struct TestEnv {
+    pub(crate) struct TestEnv {
         original_vars: HashMap<String, Option<String>>,
         color_vars: Vec<&'static str>,
     }
@@ -251,7 +250,7 @@ mod tests {
         TEST_ENV.get_or_init(|| Mutex::new(TestEnv::new()))
     }
 
-    fn run_with_env_vars<F, T>(vars: &[(&str, Option<&str>)], test: F) -> T
+    pub(crate) fn run_with_env_vars<F, T>(vars: &[(&str, Option<&str>)], test: F) -> T
     where
         F: FnOnce() -> T,
     {
