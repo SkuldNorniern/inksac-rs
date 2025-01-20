@@ -117,6 +117,17 @@ impl Color {
     }
 
     /// Convert RGB color values to the nearest basic ANSI color
+    ///
+    /// This function maps RGB colors to the 8 basic ANSI colors by analyzing
+    /// the relative luminance and dominant color components.
+    ///
+    /// # Arguments
+    /// * `r` - Red component (0-255)
+    /// * `g` - Green component (0-255)
+    /// * `b` - Blue component (0-255)
+    ///
+    /// # Returns
+    /// * `Color` - The nearest basic ANSI color
     pub fn rgb_to_basic(r: u8, g: u8, b: u8) -> Color {
         let (r_f, g_f, b_f) = (f32::from(r), f32::from(g), f32::from(b));
 
@@ -134,6 +145,7 @@ impl Color {
         Self::determine_dominant_color(r, g, b, r_f, g_f, b_f)
     }
 
+    /// Check for extreme cases (very dark/light)
     fn check_extreme_cases(r: u8, g: u8, b: u8, r_f: f32, g_f: f32, b_f: f32) -> Option<Color> {
         // Handle very dark/light colors
         if r < 10 && g < 10 && b < 10 {
@@ -160,6 +172,7 @@ impl Color {
         None
     }
 
+    /// Check for special color cases
     fn check_special_colors(r: u8, g: u8, b: u8, r_f: f32, g_f: f32, b_f: f32) -> Option<Color> {
         // Special case for browns/yellows
         if r > g && g > b {
@@ -190,6 +203,7 @@ impl Color {
         None
     }
 
+    /// Determine the dominant color based on RGB components
     fn determine_dominant_color(r: u8, g: u8, b: u8, r_f: f32, g_f: f32, b_f: f32) -> Color {
         let r_ratio = r_f / 255.0;
         let g_ratio = g_f / 255.0;
