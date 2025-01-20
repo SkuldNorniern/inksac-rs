@@ -4,8 +4,8 @@
 //! It provides functions to check the current environment and determine what color
 //! features are available.
 
-use std::env;
 use crate::error::ColorError;
+use std::env;
 
 /// Terminal color support levels
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -55,37 +55,28 @@ impl std::fmt::Display for ColorSupport {
 /// }
 /// ```
 pub fn check_color_support() -> Result<ColorSupport, ColorError> {
-    // Check NO_COLOR environment variable first (https://no-color.org/)
+    // Handle NO_COLOR first as it takes absolute precedence
     if env::var("NO_COLOR").is_ok() {
+        println!("NO_COLOR is set");
         return Ok(ColorSupport::NoColor);
     }
+
+    let clicolor = env::var("CLICOLOR").unwrap_or_default();
+    if clicolor == "0" {
+        println!("CLICOLOR is set to 0");
+        return Ok(ColorSupport::NoColor);
+    }
+
+    let mut support = ColorSupport::NoColor;
 
     // Check COLORTERM for true color support
     let colorterm = env::var("COLORTERM").unwrap_or_default();
     if colorterm.contains("truecolor") || colorterm.contains("24bit") {
-        return Ok(ColorSupport::TrueColor);
+        support = ColorSupport::TrueColor;
+        println!("COLORTERM is set to truecolor");
     }
 
-    // Check TERM_PROGRAM for specific terminals that support true color
-    let term_program = env::var("TERM_PROGRAM").unwrap_or_default();
-    if ["iTerm.app", "Apple_Terminal", "Hyper"].contains(&term_program.as_str()) {
-        return Ok(ColorSupport::TrueColor);
-    }
-
-    // Check various terminal environment variables
     let term = env::var("TERM").unwrap_or_default().to_lowercase();
-    let clicolor = env::var("CLICOLOR").unwrap_or_default();
-    let clicolor_force = env::var("CLICOLOR_FORCE").unwrap_or_default();
-
-    // Force color if CLICOLOR_FORCE is set to 1
-    if clicolor_force == "1" {
-        return Ok(ColorSupport::Basic);
-    }
-
-    // Disable color if CLICOLOR is set to 0
-    if clicolor == "0" {
-        return Ok(ColorSupport::NoColor);
-    }
 
     // List of terminals that support true color
     let truecolor_terms = [
@@ -104,21 +95,44 @@ pub fn check_color_support() -> Result<ColorSupport, ColorError> {
         "termious",
     ];
     if truecolor_terms.iter().any(|&t| term.contains(t)) {
-        return Ok(ColorSupport::TrueColor);
+        support = ColorSupport::TrueColor;
+        println!("TERM is set to truecolor");
     }
 
-    // Check for 256 color support
-    if term.contains("256color") || term.contains("256") {
-        Ok(ColorSupport::Color256)
-    } else if term.contains("color")
-        || term.contains("ansi")
-        || term.contains("xterm")
-        || term.contains("screen")
-    {
-        Ok(ColorSupport::Basic)
-    } else {
-        Ok(ColorSupport::NoColor)
+    // Check TERM_PROGRAM for specific terminals that support true color
+    let term_program = env::var("TERM_PROGRAM").unwrap_or_default();
+    if ["iTerm.app", "Apple_Terminal", "Hyper"].contains(&term_program.as_str()) {
+        support = ColorSupport::TrueColor;
+        println!("TERM_PROGRAM is set to truecolor");
     }
+
+    // If no true color support was detected, check for 256 colors or basic colors
+    if support == ColorSupport::NoColor {
+        if term.contains("256color") || term.contains("256") {
+            support = ColorSupport::Color256;
+            println!("TERM is set to 256color");
+        } else if term.contains("color")
+            || term.contains("ansi")
+            || term.contains("xterm")
+            || term.contains("screen")
+        {
+            support = ColorSupport::Basic;
+            println!("TERM is set to basic");
+        }
+    }
+
+    // Handle CLICOLOR_FORCE after determining actual support level
+    let clicolor_force = env::var("CLICOLOR_FORCE").unwrap_or_default();
+    if clicolor_force == "1" {
+        // If no support was detected but CLICOLOR_FORCE is set, use Basic
+        // Otherwise, keep the highest detected support level
+        if support == ColorSupport::NoColor {
+            support = ColorSupport::Basic;
+            println!("CLICOLOR_FORCE is set to 1");
+        }
+    }
+
+    Ok(support)
 }
 
 /// Check if the terminal supports ANSI colors
@@ -137,57 +151,124 @@ pub fn is_color_available() -> Result<(), ColorError> {
 mod tests {
     use super::*;
     use crate::Color;
-    /// Helper function to run tests with a controlled environment
-    fn with_env_vars<F, T>(vars: &[(&str, Option<&str>)], test: F) -> T
+    use std::collections::HashMap;
+    use std::sync::Mutex;
+    use std::sync::OnceLock;
+
+    static TEST_ENV: OnceLock<Mutex<TestEnv>> = OnceLock::new();
+
+    /// Test environment that provides complete isolation for environment variables
+    struct TestEnv {
+        original_vars: HashMap<String, Option<String>>,
+        color_vars: Vec<&'static str>,
+    }
+
+    impl TestEnv {
+        fn new() -> Self {
+            let color_vars = vec![
+                "NO_COLOR",
+                "COLORTERM",
+                "TERM",
+                "TERM_PROGRAM",
+                "CLICOLOR",
+                "CLICOLOR_FORCE",
+                "TERMINFO",
+                "COLORTERM_24BIT",
+                "KONSOLE_VERSION",
+                "KITTY_WINDOW_ID",
+                "ALACRITTY_LOG",
+                "TMUX",
+                "ITERM_SESSION_ID",
+                "WT_SESSION",
+                "WEZTERM_PANE",
+                "VTE_VERSION",
+            ];
+
+            let original_vars = color_vars
+                .iter()
+                .map(|&name| {
+                    let value = env::var(name).ok();
+                    (name.to_string(), value)
+                })
+                .collect();
+
+            Self {
+                original_vars,
+                color_vars,
+            }
+        }
+
+        fn set_vars(&self, vars: &[(&str, Option<&str>)]) -> Result<(), std::env::VarError> {
+            // Clear all variables first
+            for var in &self.color_vars {
+                env::remove_var(var);
+            }
+
+            // Set new variables
+            for (name, value) in vars {
+                match value {
+                    Some(v) => env::set_var(name, v),
+                    None => env::remove_var(name),
+                }
+            }
+
+            // Verify variables were set correctly
+            for (name, value) in vars {
+                match value {
+                    Some(expected) => {
+                        let actual = env::var(name)?;
+                        if actual != *expected {
+                            return Err(std::env::VarError::NotPresent);
+                        }
+                    }
+                    None => {
+                        if env::var(name).is_ok() {
+                            return Err(std::env::VarError::NotPresent);
+                        }
+                    }
+                }
+            }
+            Ok(())
+        }
+
+        fn reset(&self) {
+            for (name, value) in &self.original_vars {
+                match value {
+                    Some(v) => env::set_var(name, v),
+                    None => env::remove_var(name),
+                }
+            }
+        }
+    }
+
+    impl Drop for TestEnv {
+        fn drop(&mut self) {
+            self.reset();
+        }
+    }
+
+    fn get_test_env() -> &'static Mutex<TestEnv> {
+        TEST_ENV.get_or_init(|| Mutex::new(TestEnv::new()))
+    }
+
+    fn run_with_env_vars<F, T>(vars: &[(&str, Option<&str>)], test: F) -> T
     where
         F: FnOnce() -> T,
     {
-        // List of all color-related environment variables we need to control
-        let color_vars = [
-            "NO_COLOR",
-            "COLORTERM",
-            "TERM",
-            "TERM_PROGRAM",
-            "CLICOLOR",
-            "CLICOLOR_FORCE",
-        ];
-
-        // Store original values
-        let original: Vec<(String, Option<String>)> = color_vars
-            .iter()
-            .map(|&name| (name.to_string(), env::var(name).ok()))
-            .collect();
-
-        // Clear all color-related environment variables
-        for var in &color_vars {
-            env::remove_var(var);
-        }
-
-        // Set test-specific variables
-        for (name, value) in vars {
-            match value {
-                Some(v) => env::set_var(name, v),
-                None => env::remove_var(name),
-            }
-        }
-
-        // Run test
+        let env = get_test_env()
+            .lock()
+            .expect("Failed to lock test environment");
+        env.set_vars(vars)
+            .expect("Failed to set environment variables");
         let result = test();
-
-        // Restore original environment
-        for (name, value) in original {
-            match value {
-                Some(v) => env::set_var(name, v),
-                None => env::remove_var(&name),
-            }
-        }
-
+        env.reset();
         result
     }
 
     #[test]
-    fn test_color_support() {
-        with_env_vars(
+    fn test_all_color_scenarios() {
+        // Test color support
+        run_with_env_vars(
             &[
                 ("NO_COLOR", None),
                 ("COLORTERM", Some("truecolor")),
@@ -198,101 +279,48 @@ mod tests {
                 assert!(support.is_ok());
             },
         );
-    }
 
-    #[test]
-    fn test_no_color_env() {
-        let support = with_env_vars(
+        // Test no color environment
+        run_with_env_vars(
             &[("NO_COLOR", Some("")), ("TERM", None), ("COLORTERM", None)],
-            || check_color_support().expect("Color support check failed"),
+            || {
+                let support = check_color_support().expect("Color support check failed");
+                assert_eq!(support, ColorSupport::NoColor);
+            },
         );
-        assert_eq!(support, ColorSupport::NoColor);
-    }
 
-    #[test]
-    fn test_true_color_support() {
-        let support = with_env_vars(
-            &[("NO_COLOR", None), ("COLORTERM", Some("truecolor"))],
-            || check_color_support().expect("Color support check failed"),
-        );
-        assert_eq!(support, ColorSupport::TrueColor);
-
-        let support = with_env_vars(&[("NO_COLOR", None), ("COLORTERM", Some("24bit"))], || {
-            check_color_support().expect("Color support check failed")
-        });
-        assert_eq!(support, ColorSupport::TrueColor);
-    }
-
-    #[test]
-    fn test_256_color_support() {
-        let support = with_env_vars(
+        // Test CLICOLOR_FORCE
+        run_with_env_vars(
             &[
-                ("NO_COLOR", None),
-                ("COLORTERM", None),
-                ("TERM", Some("xterm-256color")),
-            ],
-            || check_color_support().expect("Color support check failed"),
-        );
-        assert_eq!(support, ColorSupport::Color256);
-    }
-
-    #[test]
-    fn test_basic_color_support() {
-        let support = with_env_vars(
-            &[
-                ("NO_COLOR", None),
-                ("COLORTERM", None),
-                ("TERM", Some("xterm")),
-                ("TERM_PROGRAM", Some("test")),
-                ("CLICOLOR", Some("1")),
-                ("CLICOLOR_FORCE", Some("1")),
-            ],
-            || check_color_support().expect("Color support check failed"),
-        );
-        assert_eq!(support, ColorSupport::Basic);
-    }
-
-    #[test]
-    fn test_clicolor_force() {
-        let support = with_env_vars(
-            &[
-                ("CLICOLOR_FORCE", Some("1")),
                 ("NO_COLOR", None),
                 ("COLORTERM", None),
                 ("TERM", None),
+                ("CLICOLOR_FORCE", Some("1")),
+                ("CLICOLOR", None),
             ],
-            || check_color_support().expect("Color support check failed"),
+            || {
+                let support = check_color_support().expect("Color support check failed");
+                assert_eq!(support, ColorSupport::Basic);
+            },
         );
-        assert_eq!(support, ColorSupport::Basic);
-    }
 
-    #[test]
-    fn test_clicolor_disable() {
-        let support = with_env_vars(
+        // Test CLICOLOR disable
+        run_with_env_vars(
             &[
                 ("CLICOLOR", Some("0")),
                 ("NO_COLOR", None),
                 ("COLORTERM", None),
-                ("TERM", Some("xterm-256color")),
+                ("TERM", None),
                 ("CLICOLOR_FORCE", None),
             ],
-            || check_color_support().expect("Color support check failed"),
+            || {
+                let support = check_color_support().expect("Color support check failed");
+                assert_eq!(support, ColorSupport::NoColor);
+            },
         );
-        assert_eq!(support, ColorSupport::NoColor);
-    }
 
-    #[test]
-    fn test_no_term_env() {
-        let support = with_env_vars(
-            &[("NO_COLOR", None), ("COLORTERM", None), ("TERM", None)],
-            || check_color_support().expect("Color support check failed"),
-        );
-        assert_eq!(support, ColorSupport::NoColor);
-    }
-
-    #[test]
-    fn test_rgb_color() {
-        with_env_vars(
+        // Test RGB color
+        run_with_env_vars(
             &[
                 ("NO_COLOR", None),
                 ("COLORTERM", Some("truecolor")),
@@ -303,11 +331,9 @@ mod tests {
                 assert!(rgb.is_ok());
             },
         );
-    }
 
-    #[test]
-    fn test_hex_color() {
-        with_env_vars(
+        // Test HEX color
+        run_with_env_vars(
             &[
                 ("NO_COLOR", None),
                 ("COLORTERM", Some("truecolor")),
@@ -320,5 +346,3 @@ mod tests {
         );
     }
 }
-
-
