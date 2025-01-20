@@ -187,39 +187,45 @@ mod tests {
 
     #[test]
     fn test_style_builder() {
-        run_with_env_vars(&[
-            ("COLORTERM", Some("truecolor")),
-            ("TERM", Some("xterm-256color")),
-            ("NO_COLOR", None),
-        ], || {
-            let style = Style::builder()
-                .foreground(Color::Red)
-                .background(Color::Blue)
-                .bold()
-                .italic()
-                .build();
+        run_with_env_vars(
+            &[
+                ("COLORTERM", Some("truecolor")),
+                ("TERM", Some("xterm-256color")),
+                ("NO_COLOR", None),
+            ],
+            || {
+                let style = Style::builder()
+                    .foreground(Color::Red)
+                    .background(Color::Blue)
+                    .bold()
+                    .italic()
+                    .build();
 
-            assert_eq!(style.foreground, Color::Red);
-            assert_eq!(style.background, Color::Blue);
-            assert!(style.bold);
-            assert!(style.italic);
-            assert!(!style.dim);
-            assert!(!style.underline);
-        });
+                assert_eq!(style.foreground, Color::Red);
+                assert_eq!(style.background, Color::Blue);
+                assert!(style.bold);
+                assert!(style.italic);
+                assert!(!style.dim);
+                assert!(!style.underline);
+            },
+        );
     }
 
     #[test]
     fn test_style_display() {
-        run_with_env_vars(&[
-            ("COLORTERM", Some("truecolor")),
-            ("TERM", Some("xterm-256color")),
-            ("NO_COLOR", None),
-        ], || {
-            let style = Style::builder().foreground(Color::Red).bold().build();
+        run_with_env_vars(
+            &[
+                ("COLORTERM", Some("truecolor")),
+                ("TERM", Some("xterm-256color")),
+                ("NO_COLOR", None),
+            ],
+            || {
+                let style = Style::builder().foreground(Color::Red).bold().build();
 
-            let output = style.to_string();
-            assert!(output.contains("\x1b[31m")); // Red
-            assert!(output.contains("\x1b[1m")); // Bold
-        });
+                let output = style.to_string();
+                assert!(output.contains("\x1b[31m")); // Red
+                assert!(output.contains("\x1b[1m")); // Bold
+            },
+        );
     }
 }

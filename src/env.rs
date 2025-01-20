@@ -253,7 +253,7 @@ pub(crate) mod tests {
             .collect();
 
         // Check if we're running in a CI environment
-        let is_ci = env::var("CI").is_ok() 
+        let is_ci = env::var("CI").is_ok()
             || env::var("GITHUB_ACTIONS").is_ok()
             || env::var("GITLAB_CI").is_ok()
             || env::var("TRAVIS").is_ok()

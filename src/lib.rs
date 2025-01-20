@@ -108,35 +108,41 @@ mod tests {
 
     #[test]
     fn test_style_builder() {
-        run_with_env_vars(&[
-            ("COLORTERM", Some("truecolor")),
-            ("TERM", Some("xterm-256color")),
-            ("NO_COLOR", None),
-        ], || {
-            let style = Style::builder()
-                .foreground(Color::Red)
-                .background(Color::Blue)
-                .bold()
-                .italic()
-                .build();
+        run_with_env_vars(
+            &[
+                ("COLORTERM", Some("truecolor")),
+                ("TERM", Some("xterm-256color")),
+                ("NO_COLOR", None),
+            ],
+            || {
+                let style = Style::builder()
+                    .foreground(Color::Red)
+                    .background(Color::Blue)
+                    .bold()
+                    .italic()
+                    .build();
 
-            assert_eq!(style.foreground, Color::Red);
-            assert_eq!(style.background, Color::Blue);
-            assert!(style.bold);
-            assert!(style.italic);
-        });
+                assert_eq!(style.foreground, Color::Red);
+                assert_eq!(style.background, Color::Blue);
+                assert!(style.bold);
+                assert!(style.italic);
+            },
+        );
     }
 
     #[test]
     fn test_colored_string() {
-        run_with_env_vars(&[
-            ("COLORTERM", Some("truecolor")),
-            ("TERM", Some("xterm-256color")),
-            ("NO_COLOR", None),
-        ], || {
-            let style = Style::builder().foreground(Color::Green).build();
-            let colored = "test".style(style);
-            assert_eq!(colored.into_string(), "test");
-        });
+        run_with_env_vars(
+            &[
+                ("COLORTERM", Some("truecolor")),
+                ("TERM", Some("xterm-256color")),
+                ("NO_COLOR", None),
+            ],
+            || {
+                let style = Style::builder().foreground(Color::Green).build();
+                let colored = "test".style(style);
+                assert_eq!(colored.into_string(), "test");
+            },
+        );
     }
 }

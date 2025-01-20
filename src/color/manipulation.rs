@@ -82,35 +82,41 @@ mod tests {
 
     #[test]
     fn test_lighten() {
-        run_with_env_vars(&[
-            ("COLORTERM", Some("truecolor")),
-            ("TERM", Some("xterm-256color")),
-            ("NO_COLOR", None),
-        ], || {
-            let color = Color::new_rgb(100, 100, 100).unwrap();
-            let lightened = color.lighten(50).unwrap();
-            if let Color::RGB(r, g, b) = lightened {
-                assert!(r > 100);
-                assert!(g > 100);
-                assert!(b > 100);
-            }
-        });
+        run_with_env_vars(
+            &[
+                ("COLORTERM", Some("truecolor")),
+                ("TERM", Some("xterm-256color")),
+                ("NO_COLOR", None),
+            ],
+            || {
+                let color = Color::new_rgb(100, 100, 100).unwrap();
+                let lightened = color.lighten(50).unwrap();
+                if let Color::RGB(r, g, b) = lightened {
+                    assert!(r > 100);
+                    assert!(g > 100);
+                    assert!(b > 100);
+                }
+            },
+        );
     }
 
     #[test]
     fn test_darken() {
-        run_with_env_vars(&[
-            ("COLORTERM", Some("truecolor")),
-            ("TERM", Some("xterm-256color")),
-            ("NO_COLOR", None),
-        ], || {
-            let color = Color::new_rgb(100, 100, 100).unwrap();
-            let darkened = color.darken(50).unwrap();
-            if let Color::RGB(r, g, b) = darkened {
-                assert!(r < 100);
-                assert!(g < 100);
-                assert!(b < 100);
-            }
-        });
+        run_with_env_vars(
+            &[
+                ("COLORTERM", Some("truecolor")),
+                ("TERM", Some("xterm-256color")),
+                ("NO_COLOR", None),
+            ],
+            || {
+                let color = Color::new_rgb(100, 100, 100).unwrap();
+                let darkened = color.darken(50).unwrap();
+                if let Color::RGB(r, g, b) = darkened {
+                    assert!(r < 100);
+                    assert!(g < 100);
+                    assert!(b < 100);
+                }
+            },
+        );
     }
 }
