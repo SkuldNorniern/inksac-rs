@@ -76,4 +76,33 @@ impl Color {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use crate::env::tests::run_with_env_vars;
+
+    #[test]
+    fn test_lighten() {
+        run_with_env_vars(&[("COLORTERM", Some("truecolor"))], || {
+            let color = Color::new_rgb(100, 100, 100).unwrap();
+            let lightened = color.lighten(50).unwrap();
+            if let Color::RGB(r, g, b) = lightened {
+                assert!(r > 100);
+                assert!(g > 100);
+                assert!(b > 100);
+            }
+        });
+    }
+
+    #[test]
+    fn test_darken() {
+        run_with_env_vars(&[("COLORTERM", Some("truecolor"))], || {
+            let color = Color::new_rgb(100, 100, 100).unwrap();
+            let darkened = color.darken(50).unwrap();
+            if let Color::RGB(r, g, b) = darkened {
+                assert!(r < 100);
+                assert!(g < 100);
+                assert!(b < 100);
+            }
+        });
+    }
+}

@@ -104,26 +104,31 @@ pub use style::{Style, StyleBuilder};
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::env::tests::run_with_env_vars;
 
     #[test]
     fn test_style_builder() {
-        let style = Style::builder()
-            .foreground(Color::Red)
-            .background(Color::Blue)
-            .bold()
-            .italic()
-            .build();
+        run_with_env_vars(&[("COLORTERM", Some("truecolor"))], || {
+            let style = Style::builder()
+                .foreground(Color::Red)
+                .background(Color::Blue)
+                .bold()
+                .italic()
+                .build();
 
-        assert_eq!(style.foreground, Color::Red);
-        assert_eq!(style.background, Color::Blue);
-        assert!(style.bold);
-        assert!(style.italic);
+            assert_eq!(style.foreground, Color::Red);
+            assert_eq!(style.background, Color::Blue);
+            assert!(style.bold);
+            assert!(style.italic);
+        });
     }
 
     #[test]
     fn test_colored_string() {
-        let style = Style::builder().foreground(Color::Green).build();
-        let colored = "test".style(style);
-        assert_eq!(colored.into_string(), "test");
+        run_with_env_vars(&[("COLORTERM", Some("truecolor"))], || {
+            let style = Style::builder().foreground(Color::Green).build();
+            let colored = "test".style(style);
+            assert_eq!(colored.into_string(), "test");
+        });
     }
 }

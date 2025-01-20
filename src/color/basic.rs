@@ -63,9 +63,10 @@ impl Color {
     /// }
     /// ```
     pub fn new_rgb(r: u8, g: u8, b: u8) -> Result<Self, ColorError> {
-        match check_color_support()? {
+        let support = check_color_support()?;
+        match support {
             ColorSupport::TrueColor => Ok(Color::RGB(r, g, b)),
-            support => Err(ColorError::UnsupportedColorMode(
+            _ => Err(ColorError::UnsupportedColorMode(
                 ColorSupport::TrueColor,
                 support,
             )),
@@ -97,18 +98,18 @@ impl Color {
     pub fn new_hex(hex: &'static str) -> Result<Self, ColorError> {
         Self::validate_hex(hex)?;
 
-        match check_color_support()? {
+        let support = check_color_support()?;
+        match support {
             ColorSupport::TrueColor => Ok(Color::HEX(hex)),
-            support => Err(ColorError::UnsupportedColorMode(
+            _ => Err(ColorError::UnsupportedColorMode(
                 ColorSupport::TrueColor,
                 support,
             )),
         }
     }
 
-    pub(crate) fn validate_hex(hex: &str) -> Result<(u8, u8, u8), ColorError> {
-        let hex = hex
-            .strip_prefix('#')
+    pub fn validate_hex(hex: &str) -> Result<(u8, u8, u8), ColorError> {
+        let hex = hex.strip_prefix('#')
             .ok_or_else(|| ColorError::InvalidHexCode(hex.to_string()))?;
 
         if hex.len() != 6 {
@@ -152,11 +153,13 @@ impl Color {
                 Cow::Owned(ansi::fg_rgb(r, g, b))
             }
             Color::HSV(h, s, v) => {
-                let (r, g, b) = Self::hsv_to_rgb(h, s, v);
+                let (r, g, b) = Self::hsv_to_rgb(h, s, v)
+                    .expect("Failed to convert HSV to RGB - this should be validated at construction");
                 Cow::Owned(ansi::fg_rgb(r, g, b))
             }
             Color::HSL(h, s, l) => {
-                let (r, g, b) = Self::hsl_to_rgb(h, s, l);
+                let (r, g, b) = Self::hsl_to_rgb(h, s, l)
+                    .expect("Failed to convert HSL to RGB - this should be validated at construction");
                 Cow::Owned(ansi::fg_rgb(r, g, b))
             }
         }
@@ -189,11 +192,13 @@ impl Color {
                 Cow::Owned(ansi::bg_rgb(r, g, b))
             }
             Color::HSV(h, s, v) => {
-                let (r, g, b) = Self::hsv_to_rgb(h, s, v);
+                let (r, g, b) = Self::hsv_to_rgb(h, s, v)
+                    .expect("Failed to convert HSV to RGB - this should be validated at construction");
                 Cow::Owned(ansi::bg_rgb(r, g, b))
             }
             Color::HSL(h, s, l) => {
-                let (r, g, b) = Self::hsl_to_rgb(h, s, l);
+                let (r, g, b) = Self::hsl_to_rgb(h, s, l)
+                    .expect("Failed to convert HSL to RGB - this should be validated at construction");
                 Cow::Owned(ansi::bg_rgb(r, g, b))
             }
         }
@@ -216,9 +221,10 @@ impl Color {
             ));
         }
 
-        match check_color_support()? {
+        let support = check_color_support()?;
+        match support {
             ColorSupport::TrueColor => Ok(Color::HSV(h, s, v)),
-            support => Err(ColorError::UnsupportedColorMode(
+            _ => Err(ColorError::UnsupportedColorMode(
                 ColorSupport::TrueColor,
                 support,
             )),
@@ -242,12 +248,42 @@ impl Color {
             ));
         }
 
-        match check_color_support()? {
+        let support = check_color_support()?;
+        match support {
             ColorSupport::TrueColor => Ok(Color::HSL(h, s, l)),
-            support => Err(ColorError::UnsupportedColorMode(
+            _ => Err(ColorError::UnsupportedColorMode(
                 ColorSupport::TrueColor,
                 support,
             )),
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::env::tests::run_with_env_vars;
+
+    #[test]
+    fn test_new_rgb() {
+        run_with_env_vars(&[("COLORTERM", Some("truecolor"))], || {
+            let color = Color::new_rgb(255, 128, 0).unwrap();
+            if let Color::RGB(r, g, b) = color {
+                assert_eq!(r, 255);
+                assert_eq!(g, 128);
+                assert_eq!(b, 0);
+            }
+        });
+    }
+
+    #[test]
+    fn test_new_hex() {
+        run_with_env_vars(&[("COLORTERM", Some("truecolor"))], || {
+            let color = Color::new_hex("#FF8000").unwrap();
+            if let Color::HEX(hex) = color {
+                assert_eq!(hex, "#FF8000");
+            }
+        });
+    }
+    // ... rest of the tests ...
 }

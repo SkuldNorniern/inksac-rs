@@ -109,6 +109,12 @@ impl Style {
             && !self.italic
             && !self.underline
     }
+
+    /// Add method to check if a style would override another
+    pub fn would_override(&self, other: &Style) -> bool {
+        (self.foreground != Color::Empty && other.foreground != Color::Empty) ||
+        (self.background != Color::Empty && other.background != Color::Empty)
+    }
 }
 
 impl fmt::Display for Style {
@@ -177,30 +183,35 @@ impl StyleBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::env::tests::run_with_env_vars;
 
     #[test]
     fn test_style_builder() {
-        let style = Style::builder()
-            .foreground(Color::Red)
-            .background(Color::Blue)
-            .bold()
-            .italic()
-            .build();
+        run_with_env_vars(&[("COLORTERM", Some("truecolor"))], || {
+            let style = Style::builder()
+                .foreground(Color::Red)
+                .background(Color::Blue)
+                .bold()
+                .italic()
+                .build();
 
-        assert_eq!(style.foreground, Color::Red);
-        assert_eq!(style.background, Color::Blue);
-        assert!(style.bold);
-        assert!(style.italic);
-        assert!(!style.dim);
-        assert!(!style.underline);
+            assert_eq!(style.foreground, Color::Red);
+            assert_eq!(style.background, Color::Blue);
+            assert!(style.bold);
+            assert!(style.italic);
+            assert!(!style.dim);
+            assert!(!style.underline);
+        });
     }
 
     #[test]
     fn test_style_display() {
-        let style = Style::builder().foreground(Color::Red).bold().build();
+        run_with_env_vars(&[("COLORTERM", Some("truecolor"))], || {
+            let style = Style::builder().foreground(Color::Red).bold().build();
 
-        let output = style.to_string();
-        assert!(output.contains("\x1b[31m")); // Red
-        assert!(output.contains("\x1b[1m")); // Bold
+            let output = style.to_string();
+            assert!(output.contains("\x1b[31m")); // Red
+            assert!(output.contains("\x1b[1m")); // Bold
+        });
     }
 }
