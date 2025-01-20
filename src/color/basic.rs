@@ -40,17 +40,13 @@ pub enum Color {
 impl Color {
     /// Create a new RGB color
     ///
-    /// This function will check if the terminal supports true color (16 million colors)
-    /// before creating the color.
-    ///
     /// # Arguments
     /// * `r` - Red component (0-255)
     /// * `g` - Green component (0-255)
     /// * `b` - Blue component (0-255)
     ///
     /// # Returns
-    /// * `Ok(Color)` if the terminal supports true color
-    /// * `Err(ColorError)` if true color is not supported
+    /// * `Ok(Color)` - RGB color
     ///
     /// # Examples
     /// ```rust
@@ -63,14 +59,7 @@ impl Color {
     /// }
     /// ```
     pub fn new_rgb(r: u8, g: u8, b: u8) -> Result<Self, ColorError> {
-        let support = check_color_support()?;
-        match support {
-            ColorSupport::TrueColor => Ok(Color::RGB(r, g, b)),
-            _ => Err(ColorError::UnsupportedColorMode(
-                ColorSupport::TrueColor,
-                support,
-            )),
-        }
+        Ok(Color::RGB(r, g, b))
     }
 
     /// Create a new color from a hexadecimal color code
@@ -82,8 +71,8 @@ impl Color {
     /// * `hex` - Hexadecimal color code (e.g., "#FF0000")
     ///
     /// # Returns
-    /// * `Ok(Color)` if the hex code is valid and terminal supports true color
-    /// * `Err(ColorError)` if the hex code is invalid or true color is not supported
+    /// * `Ok(Color)` if the hex code is valid
+    /// * `Err(ColorError)` if the hex code is invalid
     ///
     /// # Examples
     /// ```rust
@@ -97,18 +86,10 @@ impl Color {
     /// ```
     pub fn new_hex(hex: &'static str) -> Result<Self, ColorError> {
         Self::validate_hex(hex)?;
-
-        let support = check_color_support()?;
-        match support {
-            ColorSupport::TrueColor => Ok(Color::HEX(hex)),
-            _ => Err(ColorError::UnsupportedColorMode(
-                ColorSupport::TrueColor,
-                support,
-            )),
-        }
+        Ok(Color::HEX(hex))
     }
 
-    pub fn validate_hex(hex: &str) -> Result<(u8, u8, u8), ColorError> {
+    pub(crate) fn validate_hex(hex: &str) -> Result<(u8, u8, u8), ColorError> {
         let hex = hex
             .strip_prefix('#')
             .ok_or_else(|| ColorError::InvalidHexCode(hex.to_string()))?;
@@ -217,23 +198,15 @@ impl Color {
     /// * `v` - Value (0-100)
     ///
     /// # Returns
-    /// * `Ok(Color)` if the terminal supports true color
-    /// * `Err(ColorError)` if true color is not supported
+    /// * `Ok(Color)` if the values are valid
+    /// * `Err(ColorError)` if the values are out of range
     pub fn new_hsv(h: u16, s: u8, v: u8) -> Result<Self, ColorError> {
         if h > 360 || s > 100 || v > 100 {
             return Err(ColorError::InvalidColorValue(
                 "HSV values out of range".into(),
             ));
         }
-
-        let support = check_color_support()?;
-        match support {
-            ColorSupport::TrueColor => Ok(Color::HSV(h, s, v)),
-            _ => Err(ColorError::UnsupportedColorMode(
-                ColorSupport::TrueColor,
-                support,
-            )),
-        }
+        Ok(Color::HSV(h, s, v))
     }
 
     /// Create a new HSL color
@@ -244,23 +217,15 @@ impl Color {
     /// * `l` - Lightness (0-100)
     ///
     /// # Returns
-    /// * `Ok(Color)` if the terminal supports true color
-    /// * `Err(ColorError)` if true color is not supported
+    /// * `Ok(Color)` if the values are valid
+    /// * `Err(ColorError)` if the values are out of range
     pub fn new_hsl(h: u16, s: u8, l: u8) -> Result<Self, ColorError> {
         if h > 360 || s > 100 || l > 100 {
             return Err(ColorError::InvalidColorValue(
                 "HSL values out of range".into(),
             ));
         }
-
-        let support = check_color_support()?;
-        match support {
-            ColorSupport::TrueColor => Ok(Color::HSL(h, s, l)),
-            _ => Err(ColorError::UnsupportedColorMode(
-                ColorSupport::TrueColor,
-                support,
-            )),
-        }
+        Ok(Color::HSL(h, s, l))
     }
 }
 
