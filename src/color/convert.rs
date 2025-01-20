@@ -117,92 +117,88 @@ impl Color {
     }
 
     /// Convert RGB color values to the nearest basic ANSI color
-    ///
-    /// This function maps RGB colors to the 8 basic ANSI colors by analyzing
-    /// the relative luminance and dominant color components.
-    ///
-    /// # Arguments
-    /// * `r` - Red component (0-255)
-    /// * `g` - Green component (0-255)
-    /// * `b` - Blue component (0-255)
-    ///
-    /// # Returns
-    /// * `Color` - The nearest basic ANSI color
     pub fn rgb_to_basic(r: u8, g: u8, b: u8) -> Color {
-        // Convert to f32 for calculations
-        let r_f = f32::from(r);
-        let g_f = f32::from(g);
-        let b_f = f32::from(b);
+        let (r_f, g_f, b_f) = (f32::from(r), f32::from(g), f32::from(b));
 
-        // Calculate relative luminance
-        let luminance = (0.2126 * r_f + 0.7152 * g_f + 0.0722 * b_f) / 255.0;
+        // Check extreme cases first
+        if let Some(color) = Self::check_extreme_cases(r, g, b, r_f, g_f, b_f) {
+            return color;
+        }
 
-        // Handle extreme cases (very dark/light)
+        // Check special color cases
+        if let Some(color) = Self::check_special_colors(r, g, b, r_f, g_f, b_f) {
+            return color;
+        }
+
+        // Determine final color based on dominant components
+        Self::determine_dominant_color(r, g, b, r_f, g_f, b_f)
+    }
+
+    fn check_extreme_cases(r: u8, g: u8, b: u8, r_f: f32, g_f: f32, b_f: f32) -> Option<Color> {
+        // Handle very dark/light colors
         if r < 10 && g < 10 && b < 10 {
-            return Color::Black;
+            return Some(Color::Black);
         }
         if r > 245 && g > 245 && b > 245 {
-            return Color::White;
+            return Some(Color::White);
         }
 
         let max = r.max(g).max(b);
         let min = r.min(g).min(b);
         let diff = max - min;
 
-        // If very low saturation, handle as grayscale
+        // Handle low saturation (grayscale)
         if diff < 20 {
-            return if luminance < 0.5 {
+            let luminance = (0.2126 * r_f + 0.7152 * g_f + 0.0722 * b_f) / 255.0;
+            return Some(if luminance < 0.5 {
                 Color::Black
             } else {
                 Color::White
-            };
+            });
         }
 
-        // Calculate color ratios for better comparison
-        let r_ratio = r_f / 255.0;
-        let g_ratio = g_f / 255.0;
-        let b_ratio = b_f / 255.0;
+        None
+    }
 
+    fn check_special_colors(r: u8, g: u8, b: u8, r_f: f32, g_f: f32, b_f: f32) -> Option<Color> {
         // Special case for browns/yellows
         if r > g && g > b {
-            // If red is dominant but green is significant
             let g_to_r_ratio = g_f / r_f;
-
-            // More sensitive yellow detection for browns
             if g_to_r_ratio > 0.4 && b < g / 2 {
-                return Color::Yellow;
+                return Some(Color::Yellow);
             }
         }
 
         // Special case for purples/magentas
         if r > 0 && b > 0 && g < r && g < b {
-            // If both red and blue are present and green is lower
             let r_to_b_ratio = r_f / b_f;
             let b_to_r_ratio = b_f / r_f;
-
-            // If either red or blue is at least 40% of the other
             if r_to_b_ratio > 0.4 || b_to_r_ratio > 0.4 {
-                return Color::Magenta;
+                return Some(Color::Magenta);
             }
         }
 
         // Special case for cyans
         if g > 0 && b > 0 && r < g && r < b {
-            // If both green and blue are present and red is lower
             let g_to_b_ratio = g_f / b_f;
             let b_to_g_ratio = b_f / g_f;
-
-            // For cyan, both components should be more balanced
             if g_to_b_ratio > 0.65 && b_to_g_ratio > 0.65 {
-                return Color::Cyan;
+                return Some(Color::Cyan);
             }
         }
+
+        None
+    }
+
+    fn determine_dominant_color(r: u8, g: u8, b: u8, r_f: f32, g_f: f32, b_f: f32) -> Color {
+        let r_ratio = r_f / 255.0;
+        let g_ratio = g_f / 255.0;
+        let b_ratio = b_f / 255.0;
 
         let r_dominant = r_ratio >= g_ratio && r_ratio >= b_ratio;
         let g_dominant = g_ratio >= r_ratio && g_ratio >= b_ratio;
         let b_dominant = b_ratio >= r_ratio && b_ratio >= g_ratio;
 
-        // Check secondary color strengths
         let has_red = r > 64;
         let has_green = g > 64;
         let has_blue = b > 64;
@@ -223,7 +219,6 @@ impl Color {
                 }
             }
             (false, false, true) => {
-                // If blue is dominant and green is less than 65% of blue, it's blue
                 if g_f / b_f < 0.65 {
                     Color::Blue
                 } else if has_red && r > (b / 3) {
@@ -233,6 +228,7 @@ impl Color {
                 }
             }
             _ => {
+                let luminance = (0.2126 * r_f + 0.7152 * g_f + 0.0722 * b_f) / 255.0;
                 if r > 128 && g > 128 && b < 128 {
                     Color::Yellow
                 } else if r > 128 && b > 128 && g < 128 {
