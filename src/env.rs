@@ -238,10 +238,6 @@ pub(crate) mod tests {
         }
     }
 
-    fn get_test_env() -> &'static Mutex<TestEnv> {
-        TEST_ENV.get_or_init(|| Mutex::new(TestEnv::new()))
-    }
-
     pub(crate) fn run_with_env_vars<F, T>(vars: &[(&str, Option<&str>)], test: F) -> T
     where
         F: FnOnce() -> T,

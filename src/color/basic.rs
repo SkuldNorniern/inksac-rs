@@ -13,8 +13,6 @@
 //!  
 
 use crate::ansi;
-use crate::check_color_support;
-use crate::env::ColorSupport;
 use crate::error::ColorError;
 use std::borrow::Cow;
 
