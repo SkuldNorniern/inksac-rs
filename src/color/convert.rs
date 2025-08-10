@@ -12,7 +12,8 @@ impl Color {
     /// # Returns
     /// * `(u8, u8, u8)` - RGB color components (0-255)
     pub(crate) fn hsv_to_rgb(h: u16, s: u8, v: u8) -> Result<(u8, u8, u8), ColorError> {
-        let h = f32::from(h) / 60.0;
+        // Normalize hue to [0, 360) so that 360 wraps to 0
+        let h = (h % 360) as f32 / 60.0;
         let s = f32::from(s) / 100.0;
         let v = f32::from(v) / 100.0;
 
@@ -20,14 +21,14 @@ impl Color {
         let x = c * (1.0 - ((h % 2.0) - 1.0).abs());
         let m = v - c;
 
-        let (r, g, b) = match h as u8 {
+        // Sector is guaranteed to be within 0..=5 due to hue normalization
+        let (r, g, b) = match h.floor() as u8 {
             0 => (c, x, 0.0),
             1 => (x, c, 0.0),
             2 => (0.0, c, x),
             3 => (0.0, x, c),
             4 => (x, 0.0, c),
-            5 => (c, 0.0, x),
-            _ => (0.0, 0.0, 0.0),
+            _ => (c, 0.0, x), // 5
         };
 
         let r = ((r + m) * 255.0).round();
@@ -60,7 +61,8 @@ impl Color {
             ));
         }
 
-        let h = f32::from(h) / 360.0;
+        // Normalize hue to [0, 1)
+        let h = (h % 360) as f32 / 360.0;
         let s = f32::from(s) / 100.0;
         let l = f32::from(l) / 100.0;
 
@@ -68,14 +70,13 @@ impl Color {
         let x = c * (1.0 - ((h * 6.0 % 2.0) - 1.0).abs());
         let m = l - c / 2.0;
 
-        let (r, g, b) = match (h * 6.0) as u8 {
+        let (r, g, b) = match (h * 6.0).floor() as u8 {
             0 => (c, x, 0.0),
             1 => (x, c, 0.0),
             2 => (0.0, c, x),
             3 => (0.0, x, c),
             4 => (x, 0.0, c),
-            5 => (c, 0.0, x),
-            _ => (0.0, 0.0, 0.0),
+            _ => (c, 0.0, x), // 5
         };
 
         let r = ((r + m) * 255.0) as u8;
@@ -127,7 +128,24 @@ impl Color {
     /// # Returns
     /// * `(u8, u8, u8)` - RGB color components (0-255)
     pub fn code_to_rgb(code: u8) -> (u8, u8, u8) {
-        (code / 36, (code % 36) / 6, code % 6)
+        // 256-color palette mapping:
+        // 16..=231: 6x6x6 color cube with steps [0, 95, 135, 175, 215, 255]
+        // 232..=255: grayscale ramp 24 levels: 8, 18, 28, ..., 238
+        if code < 16 {
+            return (0, 0, 0);
+        }
+        if code <= 231 {
+            let idx = code - 16;
+            let r_idx = idx / 36;
+            let g_idx = (idx % 36) / 6;
+            let b_idx = idx % 6;
+            let step = [0u8, 95, 135, 175, 215, 255];
+            (step[r_idx as usize], step[g_idx as usize], step[b_idx as usize])
+        } else {
+            let level = code.saturating_sub(232) as u16; // 0..=23
+            let v = (8 + level * 10) as u8; // 8..=238
+            (v, v, v)
+        }
     }
 
     /// Convert RGB color values to the nearest basic ANSI color

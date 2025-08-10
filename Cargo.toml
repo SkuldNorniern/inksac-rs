@@ -2,7 +2,7 @@
 name = "inksac"
 version = "0.5.0"
 authors = ["Skuld Norniern <skuldnorniern@gmail.com>"]
-edition = "2021"
+edition = "2024"
 keywords = ["cli"]
 description = "Just another color lib for terminal environment"
 readme = "README.md"

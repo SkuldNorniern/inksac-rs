@@ -26,6 +26,7 @@
 //! ```
 
 use crate::ansi;
+use crate::env::{check_color_support, ColorSupport};
 use crate::color::Color;
 use std::fmt;
 
@@ -119,6 +120,17 @@ impl Style {
 
 impl fmt::Display for Style {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // If style has no attributes, avoid emitting escape sequences
+        if self.is_empty() {
+            return Ok(());
+        }
+
+        // Respect terminal capability and NO_COLOR: if colors are not available, emit nothing
+        let support = check_color_support().unwrap_or(ColorSupport::NoColor);
+        if support == ColorSupport::NoColor {
+            return Ok(());
+        }
+
         let fg = self.foreground.to_fg();
         let bg = self.background.to_bg();
 

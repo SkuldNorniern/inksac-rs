@@ -24,6 +24,7 @@
 //! ```
 
 use crate::{ansi, Style};
+use crate::env::{check_color_support, ColorSupport};
 use std::fmt;
 
 /// A string with an associated style
@@ -99,6 +100,14 @@ impl ColoredString {
 
 impl fmt::Display for ColoredString {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Avoid emitting escape sequences when style is empty or colors disabled
+        if self.style.is_empty() {
+            return write!(f, "{}", self.string);
+        }
+        let support = check_color_support().unwrap_or(ColorSupport::NoColor);
+        if support == ColorSupport::NoColor {
+            return write!(f, "{}", self.string);
+        }
         write!(f, "{}{}{}", self.style, self.string, ansi::RESET)
     }
 }

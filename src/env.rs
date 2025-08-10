@@ -163,16 +163,24 @@ pub(crate) mod tests {
 
         // If in CI, always set color support
         if is_ci {
-            env::set_var("COLORTERM", "truecolor");
-            env::set_var("TERM", "xterm-256color");
-            env::remove_var("NO_COLOR");
+            // SAFETY: These environment mutations are limited to test scope and run
+            // synchronously before the test executes. They are restored afterward.
+            // In Rust 2024, env mutations are unsafe due to process-wide effects.
+            unsafe {
+                env::set_var("COLORTERM", "truecolor");
+                env::set_var("TERM", "xterm-256color");
+                env::remove_var("NO_COLOR");
+            }
         }
 
         // Set test-specific env vars
         for (key, value) in vars {
-            match value {
-                Some(v) => env::set_var(key, v),
-                None => env::remove_var(key),
+            // SAFETY: Test helper controls when env mutations happen; they are restored later.
+            unsafe {
+                match value {
+                    Some(v) => env::set_var(key, v),
+                    None => env::remove_var(key),
+                }
             }
         }
 
@@ -181,9 +189,12 @@ pub(crate) mod tests {
 
         // Restore original env vars
         for (key, value) in original {
-            match value {
-                Some(v) => env::set_var(&key, v),
-                None => env::remove_var(&key),
+            // SAFETY: Restoring previous environment after test execution.
+            unsafe {
+                match value {
+                    Some(v) => env::set_var(&key, v),
+                    None => env::remove_var(&key),
+                }
             }
         }
 
