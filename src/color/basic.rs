@@ -13,6 +13,7 @@
 //!  
 
 use crate::ansi;
+use crate::env::{check_color_support, ColorSupport};
 use crate::error::ColorError;
 use std::borrow::Cow;
 
@@ -115,6 +116,7 @@ impl Color {
     /// # Returns
     /// * `Cow<'static, str>` - The ANSI escape sequence for the color
     pub(crate) fn to_fg(self) -> Cow<'static, str> {
+        let support = check_color_support().unwrap_or(ColorSupport::NoColor);
         match self {
             Color::Black => Cow::Borrowed(ansi::FG_BLACK),
             Color::Red => Cow::Borrowed(ansi::FG_RED),
@@ -125,24 +127,62 @@ impl Color {
             Color::Cyan => Cow::Borrowed(ansi::FG_CYAN),
             Color::White => Cow::Borrowed(ansi::FG_WHITE),
             Color::Empty => Cow::Borrowed(""),
-            Color::RGB(r, g, b) => Cow::Owned(ansi::fg_rgb(r, g, b)),
-            Color::Color256(code) => Cow::Owned(ansi::fg_256(code)),
+            Color::RGB(r, g, b) => match support {
+                ColorSupport::TrueColor => Cow::Owned(ansi::fg_rgb(r, g, b)),
+                ColorSupport::Color256 => {
+                    let code = Self::rgb_to_256(r, g, b);
+                    Cow::Owned(ansi::fg_256(code))
+                }
+                _ => {
+                    let basic = Self::rgb_to_basic(r, g, b);
+                    match basic {
+                        Color::Black => Cow::Borrowed(ansi::FG_BLACK),
+                        Color::Red => Cow::Borrowed(ansi::FG_RED),
+                        Color::Green => Cow::Borrowed(ansi::FG_GREEN),
+                        Color::Yellow => Cow::Borrowed(ansi::FG_YELLOW),
+                        Color::Blue => Cow::Borrowed(ansi::FG_BLUE),
+                        Color::Magenta => Cow::Borrowed(ansi::FG_MAGENTA),
+                        Color::Cyan => Cow::Borrowed(ansi::FG_CYAN),
+                        Color::White => Cow::Borrowed(ansi::FG_WHITE),
+                        _ => Cow::Borrowed(""),
+                    }
+                }
+            },
+            Color::Color256(code) => match support {
+                ColorSupport::TrueColor | ColorSupport::Color256 => Cow::Owned(ansi::fg_256(code)),
+                _ => {
+                    let (r, g, b) = Self::code_to_rgb(code);
+                    let basic = Self::rgb_to_basic(r, g, b);
+                    match basic {
+                        Color::Black => Cow::Borrowed(ansi::FG_BLACK),
+                        Color::Red => Cow::Borrowed(ansi::FG_RED),
+                        Color::Green => Cow::Borrowed(ansi::FG_GREEN),
+                        Color::Yellow => Cow::Borrowed(ansi::FG_YELLOW),
+                        Color::Blue => Cow::Borrowed(ansi::FG_BLUE),
+                        Color::Magenta => Cow::Borrowed(ansi::FG_MAGENTA),
+                        Color::Cyan => Cow::Borrowed(ansi::FG_CYAN),
+                        Color::White => Cow::Borrowed(ansi::FG_WHITE),
+                        _ => Cow::Borrowed(""),
+                    }
+                }
+            },
             Color::HEX(code) => {
+                // Safety: `Color::new_hex` validates the hex code at construction.
                 let (r, g, b) = Self::validate_hex(code)
-                    .expect("Invalid hex code - this should be validated at construction");
-                Cow::Owned(ansi::fg_rgb(r, g, b))
+                    .expect("Invalid hex code - validated at construction via new_hex");
+                Color::RGB(r, g, b).to_fg()
             }
             Color::HSV(h, s, v) => {
-                let (r, g, b) = Self::hsv_to_rgb(h, s, v).expect(
-                    "Failed to convert HSV to RGB - this should be validated at construction",
-                );
-                Cow::Owned(ansi::fg_rgb(r, g, b))
+                // Safety: `Color::new_hsv` validates ranges; conversion only fails on invalid input.
+                let (r, g, b) = Self::hsv_to_rgb(h, s, v)
+                    .expect("HSV->RGB conversion cannot fail for validated HSV values");
+                Color::RGB(r, g, b).to_fg()
             }
             Color::HSL(h, s, l) => {
-                let (r, g, b) = Self::hsl_to_rgb(h, s, l).expect(
-                    "Failed to convert HSL to RGB - this should be validated at construction",
-                );
-                Cow::Owned(ansi::fg_rgb(r, g, b))
+                // Safety: `Color::new_hsl` validates ranges; conversion only fails on invalid input.
+                let (r, g, b) = Self::hsl_to_rgb(h, s, l)
+                    .expect("HSL->RGB conversion cannot fail for validated HSL values");
+                Color::RGB(r, g, b).to_fg()
             }
         }
     }
@@ -156,6 +196,7 @@ impl Color {
     /// # Returns
     /// * `Cow<'static, str>` - The ANSI escape sequence for the color
     pub(crate) fn to_bg(self) -> Cow<'static, str> {
+        let support = check_color_support().unwrap_or(ColorSupport::NoColor);
         match self {
             Color::Black => Cow::Borrowed(ansi::BG_BLACK),
             Color::Red => Cow::Borrowed(ansi::BG_RED),
@@ -166,24 +207,62 @@ impl Color {
             Color::Cyan => Cow::Borrowed(ansi::BG_CYAN),
             Color::White => Cow::Borrowed(ansi::BG_WHITE),
             Color::Empty => Cow::Borrowed(""),
-            Color::RGB(r, g, b) => Cow::Owned(ansi::bg_rgb(r, g, b)),
-            Color::Color256(code) => Cow::Owned(ansi::bg_256(code)),
+            Color::RGB(r, g, b) => match support {
+                ColorSupport::TrueColor => Cow::Owned(ansi::bg_rgb(r, g, b)),
+                ColorSupport::Color256 => {
+                    let code = Self::rgb_to_256(r, g, b);
+                    Cow::Owned(ansi::bg_256(code))
+                }
+                _ => {
+                    let basic = Self::rgb_to_basic(r, g, b);
+                    match basic {
+                        Color::Black => Cow::Borrowed(ansi::BG_BLACK),
+                        Color::Red => Cow::Borrowed(ansi::BG_RED),
+                        Color::Green => Cow::Borrowed(ansi::BG_GREEN),
+                        Color::Yellow => Cow::Borrowed(ansi::BG_YELLOW),
+                        Color::Blue => Cow::Borrowed(ansi::BG_BLUE),
+                        Color::Magenta => Cow::Borrowed(ansi::BG_MAGENTA),
+                        Color::Cyan => Cow::Borrowed(ansi::BG_CYAN),
+                        Color::White => Cow::Borrowed(ansi::BG_WHITE),
+                        _ => Cow::Borrowed(""),
+                    }
+                }
+            },
+            Color::Color256(code) => match support {
+                ColorSupport::TrueColor | ColorSupport::Color256 => Cow::Owned(ansi::bg_256(code)),
+                _ => {
+                    let (r, g, b) = Self::code_to_rgb(code);
+                    let basic = Self::rgb_to_basic(r, g, b);
+                    match basic {
+                        Color::Black => Cow::Borrowed(ansi::BG_BLACK),
+                        Color::Red => Cow::Borrowed(ansi::BG_RED),
+                        Color::Green => Cow::Borrowed(ansi::BG_GREEN),
+                        Color::Yellow => Cow::Borrowed(ansi::BG_YELLOW),
+                        Color::Blue => Cow::Borrowed(ansi::BG_BLUE),
+                        Color::Magenta => Cow::Borrowed(ansi::BG_MAGENTA),
+                        Color::Cyan => Cow::Borrowed(ansi::BG_CYAN),
+                        Color::White => Cow::Borrowed(ansi::BG_WHITE),
+                        _ => Cow::Borrowed(""),
+                    }
+                }
+            },
             Color::HEX(code) => {
+                // Safety: `Color::new_hex` validates the hex code at construction.
                 let (r, g, b) = Self::validate_hex(code)
-                    .expect("Invalid hex code - this should be validated at construction");
-                Cow::Owned(ansi::bg_rgb(r, g, b))
+                    .expect("Invalid hex code - validated at construction via new_hex");
+                Color::RGB(r, g, b).to_bg()
             }
             Color::HSV(h, s, v) => {
-                let (r, g, b) = Self::hsv_to_rgb(h, s, v).expect(
-                    "Failed to convert HSV to RGB - this should be validated at construction",
-                );
-                Cow::Owned(ansi::bg_rgb(r, g, b))
+                // Safety: `Color::new_hsv` validates ranges; conversion only fails on invalid input.
+                let (r, g, b) = Self::hsv_to_rgb(h, s, v)
+                    .expect("HSV->RGB conversion cannot fail for validated HSV values");
+                Color::RGB(r, g, b).to_bg()
             }
             Color::HSL(h, s, l) => {
-                let (r, g, b) = Self::hsl_to_rgb(h, s, l).expect(
-                    "Failed to convert HSL to RGB - this should be validated at construction",
-                );
-                Cow::Owned(ansi::bg_rgb(r, g, b))
+                // Safety: `Color::new_hsl` validates ranges; conversion only fails on invalid input.
+                let (r, g, b) = Self::hsl_to_rgb(h, s, l)
+                    .expect("HSL->RGB conversion cannot fail for validated HSL values");
+                Color::RGB(r, g, b).to_bg()
             }
         }
     }
