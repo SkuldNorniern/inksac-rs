@@ -39,6 +39,10 @@ pub struct Style {
     pub(crate) dim: bool,
     pub(crate) italic: bool,
     pub(crate) underline: bool,
+    pub(crate) blink: bool,
+    pub(crate) reverse: bool,
+    pub(crate) hidden: bool,
+    pub(crate) strikethrough: bool,
 }
 
 impl Style {
@@ -90,6 +94,10 @@ impl Style {
             dim: self.dim || other.dim,
             italic: self.italic || other.italic,
             underline: self.underline || other.underline,
+            blink: self.blink || other.blink,
+            reverse: self.reverse || other.reverse,
+            hidden: self.hidden || other.hidden,
+            strikethrough: self.strikethrough || other.strikethrough,
         }
     }
 
@@ -109,6 +117,10 @@ impl Style {
             && !self.dim
             && !self.italic
             && !self.underline
+            && !self.blink
+            && !self.reverse
+            && !self.hidden
+            && !self.strikethrough
     }
 
     /// Add method to check if a style would override another
@@ -138,8 +150,12 @@ impl fmt::Display for Style {
         let dim = if self.dim { ansi::DIM } else { "" };
         let italic = if self.italic { ansi::ITALIC } else { "" };
         let underline = if self.underline { ansi::UNDERLINE } else { "" };
+        let blink = if self.blink { ansi::BLINK } else { "" };
+        let reverse = if self.reverse { ansi::REVERSE } else { "" };
+        let hidden = if self.hidden { ansi::HIDDEN } else { "" };
+        let strikethrough = if self.strikethrough { ansi::STRIKETHROUGH } else { "" };
 
-        write!(f, "{}{}{}{}{}{}", fg, bg, bold, dim, italic, underline)
+        write!(f, "{}{}{}{}{}{}{}{}{}{}", fg, bg, bold, dim, italic, underline, blink, reverse, hidden, strikethrough)
     }
 }
 
@@ -183,6 +199,30 @@ impl StyleBuilder {
     /// Enable underlined text
     pub fn underline(&mut self) -> &mut Self {
         self.style.underline = true;
+        self
+    }
+
+    /// Enable blinking text (may not be supported by all terminals)
+    pub fn blink(&mut self) -> &mut Self {
+        self.style.blink = true;
+        self
+    }
+
+    /// Enable reverse video (swap foreground/background)
+    pub fn reverse(&mut self) -> &mut Self {
+        self.style.reverse = true;
+        self
+    }
+
+    /// Enable hidden text (useful for passwords)
+    pub fn hidden(&mut self) -> &mut Self {
+        self.style.hidden = true;
+        self
+    }
+
+    /// Enable strikethrough text
+    pub fn strikethrough(&mut self) -> &mut Self {
+        self.style.strikethrough = true;
         self
     }
 
